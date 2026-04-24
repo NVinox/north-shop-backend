@@ -8,39 +8,39 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { ProductsService } from './products.service';
+import { ProductService } from './product.service';
 
 @Controller('products')
-export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+export class ProductController {
+  constructor(private readonly productService: ProductService) {}
 
   @Get()
   getAll() {
-    return this.productsService.getAll();
+    return this.productService.getAll();
   }
 
   @Get(':id')
   getOne(@Param('id', ParseIntPipe) id: number) {
-    return this.productsService.getOne(id);
+    return this.productService.getOne(id);
   }
 
   @Post()
   create() {
-    return this.productsService.create();
+    return this.productService.create();
   }
 
   @Put()
   update() {
-    return this.productsService.update();
+    return this.productService.update();
   }
 
   @Patch()
   patchUpdate() {
-    return this.productsService.patchUpdate();
+    return this.productService.patchUpdate();
   }
 
   @Delete(':id')
   delete(@Param('id', ParseIntPipe) id: number) {
-    return this.productsService.delete(id);
+    return this.productService.delete(id);
   }
 }

@@ -3,7 +3,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ProductsModule } from './products/products.module';
+import { ProductModule } from './product/product.module';
+import { getDatabaseConfig } from './config/database.config';
 
 @Module({
   imports: [
@@ -13,19 +14,10 @@ import { ProductsModule } from './products/products.module';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
+      useFactory: getDatabaseConfig,
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('POSTGRES_HOST') || 'database',
-        port: configService.get<number>('POSTGRES_PORT'),
-        username: configService.get<string>('POSTGRES_USER'),
-        password: configService.get<string>('POSTGRES_PASSWORD'),
-        database: configService.get<string>('POSTGRES_DB'),
-        autoLoadEntities: true,
-        synchronize: true,
-      }),
     }),
-    ProductsModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],
