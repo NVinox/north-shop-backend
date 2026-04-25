@@ -12,6 +12,6 @@ export async function getDatabaseConfig(
     password: configService.getOrThrow<string>('POSTGRES_PASSWORD'),
     database: configService.getOrThrow<string>('POSTGRES_DB'),
     autoLoadEntities: true,
-    synchronize: true,
+    synchronize: false,
   };
 }
