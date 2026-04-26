@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { CreateProductDTO } from './dto/createProduct.dto';
+import { UpdateProductDTO } from './dto/updateProduct.dto';
 
 @Injectable()
 export class ProductService {
@@ -6,11 +8,9 @@ export class ProductService {
 
   getOne(id: number) {}
 
-  create() {}
+  create(dto: CreateProductDTO) {}
 
-  update() {}
-
-  patchUpdate() {}
+  update(id: number, dto: UpdateProductDTO) {}
 
   delete(id: number): boolean {
     return true;
