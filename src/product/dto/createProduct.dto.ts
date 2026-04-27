@@ -1,10 +1,14 @@
 import {
+  IsInt,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsPositive,
   IsString,
   Length,
+  Max,
   MaxLength,
+  Min,
 } from 'class-validator';
 
 export class CreateProductDTO {
@@ -22,4 +26,10 @@ export class CreateProductDTO {
   @IsNotEmpty()
   @MaxLength(255)
   sku!: string;
+
+  @IsInt()
+  @IsOptional()
+  @Max(100)
+  @Min(0)
+  discount!: number;
 }

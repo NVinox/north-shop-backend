@@ -6,6 +6,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { PriceTransformer } from 'src/common/transformers/price.transformer';
+import { ReviewAvgTransformer } from 'src/common/transformers/reviewAvg.transformer';
 
 @Entity({ name: 'products' })
 @Check(`"price" >= 0`)
@@ -19,11 +21,16 @@ export class ProductEntity {
   @Column({ type: 'varchar', length: 255 })
   title!: string;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', transformer: new PriceTransformer() })
   price!: number;
 
-  @Column({ name: 'old_price', type: 'int', nullable: true })
-  oldPrice!: number;
+  @Column({
+    name: 'old_price',
+    type: 'int',
+    nullable: true,
+    transformer: new PriceTransformer(),
+  })
+  oldPrice!: number | null;
 
   @Column({ type: 'int', default: 0 })
   discount!: number;
@@ -37,6 +44,7 @@ export class ProductEntity {
     precision: 3,
     scale: 1,
     default: 0,
+    transformer: new ReviewAvgTransformer(),
   })
   ratingAvg!: number;
 
