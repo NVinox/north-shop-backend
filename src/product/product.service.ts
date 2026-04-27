@@ -3,11 +3,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ProductEntity } from './entities/product.entity';
 import { CreateProductDTO } from './dto/createProduct.dto';
 import { UpdateProductDTO } from './dto/updateProduct.dto';
-import { ProductEntity } from './entities/product.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryProductDTO } from './dto/queryProduct.dto';
+import { PaginationResponseDTO } from 'src/common/dto/paginationResponse.dto';
 
 @Injectable()
 export class ProductService {
@@ -16,8 +18,44 @@ export class ProductService {
     private readonly productRepository: Repository<ProductEntity>,
   ) {}
 
-  async getAll(): Promise<ProductEntity[]> {
-    return await this.productRepository.find({ order: { createdAt: 'desc' } });
+  async getAll(
+    query: QueryProductDTO,
+  ): Promise<PaginationResponseDTO<ProductEntity>> {
+    const queryBuilder = this.productRepository.createQueryBuilder('products');
+    const { page, limit, sortBy, sortOrder, minPrice, maxPrice, search } =
+      query;
+
+    if (minPrice !== undefined) {
+      queryBuilder.andWhere('products.price >= :minPrice', { minPrice });
+    }
+
+    if (maxPrice !== undefined) {
+      queryBuilder.andWhere('products.price <= :maxPrice', { maxPrice });
+    }
+
+    if (search) {
+      queryBuilder.andWhere('products.title ILIKE :search', {
+        search: `%${search}%`,
+      });
+    }
+
+    queryBuilder
+      .orderBy(`products.${sortBy}`, sortOrder)
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const [items, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      items,
+      meta: {
+        totalItems: total,
+        itemCount: items.length,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+      },
+    };
   }
 
   async getOne(id: number): Promise<ProductEntity> {
