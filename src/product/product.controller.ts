@@ -7,24 +7,33 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { ProductService } from './product.service';
+
 import { CreateProductDTO } from './dto/createProduct.dto';
 import { UpdateProductDTO } from './dto/updateProduct.dto';
 import { ResponseProductDTO } from './dto/responseProduct.dto';
+import { PaginationResponseDTO } from 'src/common/dto/paginationResponse.dto';
+import { QueryProductDTO } from './dto/queryProduct.dto';
 
 @Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Get()
-  async getAll(): Promise<ResponseProductDTO[]> {
-    const products = await this.productService.getAll();
+  async getAll(
+    @Query() query: QueryProductDTO,
+  ): Promise<PaginationResponseDTO<ResponseProductDTO>> {
+    const result = await this.productService.getAll(query);
 
-    return plainToInstance(ResponseProductDTO, products, {
-      excludeExtraneousValues: true,
-    });
+    return {
+      items: plainToInstance(ResponseProductDTO, result.items, {
+        excludeExtraneousValues: true,
+      }),
+      meta: result.meta,
+    };
   }
 
   @Get(':id')
