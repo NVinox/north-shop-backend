@@ -95,7 +95,7 @@ export class ProductController {
   })
   @ApiCreatedResponse({
     description: 'Продукт создан',
-    type: ResponseProductDTO,
+    type: ResponseProductOneDTO,
   })
   @ApiBadRequestResponse({
     description: 'Ошибка неправильного запроса',
@@ -106,10 +106,10 @@ export class ProductController {
     type: ErrorResponseDTO,
   })
   @Post()
-  async create(@Body() dto: CreateProductDTO): Promise<ResponseProductDTO> {
+  async create(@Body() dto: CreateProductDTO): Promise<ResponseProductOneDTO> {
     const product = await this.productService.create(dto);
 
-    return plainToInstance(ResponseProductDTO, product, {
+    return plainToInstance(ResponseProductOneDTO, product, {
       excludeExtraneousValues: true,
     });
   }
@@ -118,7 +118,10 @@ export class ProductController {
     summary: 'Обновление продукта',
     description: 'Метод обновления продукта',
   })
-  @ApiOkResponse({ description: 'Продукт обновлен', type: ResponseProductDTO })
+  @ApiOkResponse({
+    description: 'Продукт обновлен',
+    type: ResponseProductOneDTO,
+  })
   @ApiBadRequestResponse({
     description: 'Ошибка неправильного запроса',
     type: ErrorResponseDTO,
@@ -135,10 +138,10 @@ export class ProductController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateProductDTO,
-  ): Promise<ResponseProductDTO> {
+  ): Promise<ResponseProductOneDTO> {
     const product = await this.productService.update(id, dto);
 
-    return plainToInstance(ResponseProductDTO, product, {
+    return plainToInstance(ResponseProductOneDTO, product, {
       excludeExtraneousValues: true,
     });
   }

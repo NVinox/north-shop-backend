@@ -81,7 +81,9 @@ export class ProductService {
 
     this.calculatePrice(product);
 
-    return await this.productRepository.save(product);
+    const createdProduct = await this.productRepository.save(product);
+
+    return await this.getOne(createdProduct.id);
   }
 
   async update(id: number, dto: UpdateProductDTO): Promise<ProductEntity> {
