@@ -1,3 +1,4 @@
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -17,6 +18,17 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  const config = new DocumentBuilder()
+    .setTitle('North Shop API')
+    .setDescription('API documentation for North Shop')
+    .setVersion('1.0.0')
+    .setContact('NVinox', 'https://github.com/NVinox', 'vomilk24@gmail.com')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+
+  SwaggerModule.setup('docs', app, document);
 
   await app.listen(process.env.APPLICATION_PORT ?? 3000);
 }

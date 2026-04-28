@@ -110,7 +110,7 @@ export class ProductService {
   private calculatePrice(product: ProductEntity): void {
     if (product.discount) {
       product.oldPrice = Math.round(
-        (product.price * (product.discount + 100)) / 100,
+        (product.price * 100) / (100 - product.discount),
       );
     } else {
       product.oldPrice = null;
