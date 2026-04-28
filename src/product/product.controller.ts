@@ -39,7 +39,7 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @ApiOperation({
-    summary: 'Получение списка прдуктов',
+    summary: 'Получение списка продуктов',
     description: 'Метод получения списка продуктов',
   })
   @ApiExtraModels(PaginationResponseDTO, ResponseProductDTO, PaginationMetaDTO)
@@ -59,7 +59,7 @@ export class ProductController {
   }
 
   @ApiOperation({
-    summary: 'Получение прдукта',
+    summary: 'Получение продукта',
     description: 'Метод получения продукта по id',
   })
   @ApiParam({ name: 'id', type: 'integer', description: 'ID продукта' })
