@@ -1,15 +1,10 @@
 import { Expose } from 'class-transformer';
+import { PaginationMetaDTO } from './paginationMeta.dto';
 
 export class PaginationResponseDTO<T> {
   @Expose()
   items!: T[];
 
   @Expose()
-  meta!: {
-    totalItems: number;
-    itemCount: number;
-    itemsPerPage: number;
-    totalPages: number;
-    currentPage: number;
-  };
+  meta!: PaginationMetaDTO;
 }
