@@ -3,11 +3,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
 import { PriceTransformer } from 'src/common/transformers/price.transformer';
 import { ReviewAvgTransformer } from 'src/common/transformers/reviewAvg.transformer';
+import { ProductImageEntity } from 'src/productImage/entities/productImage.entity';
 
 @Entity({ name: 'products' })
 @Check(`"price" >= 0`)
@@ -50,6 +53,11 @@ export class ProductEntity {
 
   @Column({ name: 'review_count', type: 'int', default: 0 })
   reviewCount!: number;
+
+  @OneToMany(() => ProductImageEntity, ({ product }) => product, {
+    cascade: true,
+  })
+  images!: ProductImageEntity[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

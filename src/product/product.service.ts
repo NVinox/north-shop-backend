@@ -22,6 +22,9 @@ export class ProductService {
     query: QueryProductDTO,
   ): Promise<PaginationResponseDTO<ProductEntity>> {
     const queryBuilder = this.productRepository.createQueryBuilder('products');
+
+    queryBuilder.leftJoinAndSelect('products.images', 'images');
+
     const { page, limit, sortBy, sortOrder, minPrice, maxPrice, search } =
       query;
 
@@ -59,7 +62,10 @@ export class ProductService {
   }
 
   async getOne(id: number): Promise<ProductEntity> {
-    const product = await this.productRepository.findOneBy({ id });
+    const product = await this.productRepository.findOne({
+      where: { id },
+      relations: ['images'],
+    });
 
     if (!product) {
       throw new NotFoundException();
