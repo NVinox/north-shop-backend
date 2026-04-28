@@ -1,7 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose, Type } from 'class-transformer';
-
-import { ResponseProductImageDTO } from 'src/productImage/dto/responseProductImage.dto';
+import { Expose } from 'class-transformer';
 
 export class ResponseProductDTO {
   @ApiProperty({
@@ -68,12 +66,4 @@ export class ResponseProductDTO {
   })
   @Expose()
   reviewCount!: number;
-
-  @ApiProperty({
-    description: 'Список изображений продукта',
-    type: [ResponseProductImageDTO],
-  })
-  @Expose()
-  @Type(() => ResponseProductImageDTO)
-  images!: ResponseProductImageDTO[];
 }

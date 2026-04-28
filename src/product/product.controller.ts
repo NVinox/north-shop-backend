@@ -32,6 +32,8 @@ import { PaginationResponseDTO } from 'src/common/dto/paginationResponse.dto';
 import { QueryProductDTO } from './dto/queryProduct.dto';
 import { PaginationMetaDTO } from 'src/common/dto/paginationMeta.dto';
 import { ErrorResponseDTO } from 'src/common/dto/errorResponse.dto';
+import { ResponseProductListDTO } from './dto/responseProductList.dto';
+import { ResponseProductOneDTO } from './dto/responseProductOne.dto';
 
 @ApiTags('Продукты')
 @Controller('products')
@@ -42,16 +44,20 @@ export class ProductController {
     summary: 'Получение списка продуктов',
     description: 'Метод получения списка продуктов',
   })
-  @ApiExtraModels(PaginationResponseDTO, ResponseProductDTO, PaginationMetaDTO)
-  @ApiPaginatedResponse(ResponseProductDTO)
+  @ApiExtraModels(
+    PaginationResponseDTO,
+    ResponseProductListDTO,
+    PaginationMetaDTO,
+  )
+  @ApiPaginatedResponse(ResponseProductListDTO)
   @Get()
   async getAll(
     @Query() query: QueryProductDTO,
-  ): Promise<PaginationResponseDTO<ResponseProductDTO>> {
+  ): Promise<PaginationResponseDTO<ResponseProductListDTO>> {
     const result = await this.productService.getAll(query);
 
     return {
-      items: plainToInstance(ResponseProductDTO, result.items, {
+      items: plainToInstance(ResponseProductListDTO, result.items, {
         excludeExtraneousValues: true,
       }),
       meta: result.meta,
@@ -63,7 +69,7 @@ export class ProductController {
     description: 'Метод получения продукта по id',
   })
   @ApiParam({ name: 'id', type: 'integer', description: 'ID продукта' })
-  @ApiOkResponse({ description: 'Продукт найден', type: ResponseProductDTO })
+  @ApiOkResponse({ description: 'Продукт найден', type: ResponseProductOneDTO })
   @ApiBadRequestResponse({
     description: 'Ошибка неправильного запроса',
     type: ErrorResponseDTO,
@@ -75,10 +81,10 @@ export class ProductController {
   @Get(':id')
   async getOne(
     @Param('id', ParseIntPipe) id: number,
-  ): Promise<ResponseProductDTO> {
+  ): Promise<ResponseProductOneDTO> {
     const product = await this.productService.getOne(id);
 
-    return plainToInstance(ResponseProductDTO, product, {
+    return plainToInstance(ResponseProductOneDTO, product, {
       excludeExtraneousValues: true,
     });
   }
