@@ -26,13 +26,13 @@ clean:
 	$(DC_PROD) down -v --rmi all
 
 mig-gen:
-	docker exec -it north-shop-api npm run typeorm -- migration:generate src/migrations/$(name) -d src/config/dataSource.ts
+	docker exec -it north-shop-api npm run typeorm -- migration:generate src/migrations/$(name) -d src/config/data-source.ts
 
 mig-run:
 	docker exec -it north-shop-api npm run migration:run
 
 mig-revert:
-	docker exec -it north-shop-api npm run typeorm -- migration:revert -d src/config/dataSource.ts
+	docker exec -it north-shop-api npm run typeorm -- migration:revert -d src/config/data-source.ts
 
 logs:
 	$(DC_DEV) logs -f api

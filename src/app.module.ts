@@ -7,6 +7,7 @@ import { ProductModule } from './product/product.module';
 import { getDatabaseConfig } from './config/database.config';
 import { ProductImageModule } from './productImage/product-image.module';
 import { serveStaticConfig } from './config/serve-static.config';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { serveStaticConfig } from './config/serve-static.config';
     ServeStaticModule.forRoot(serveStaticConfig),
     ProductModule,
     ProductImageModule,
+    UserModule,
   ],
 })
 export class AppModule {}
