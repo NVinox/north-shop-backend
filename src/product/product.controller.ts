@@ -30,16 +30,16 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { plainToInstance } from 'class-transformer';
 import { ProductService } from './product.service';
 
-import { ApiPaginatedResponse } from 'src/common/decorators/apiPaginatedResponse.decorator';
+import { ApiPaginatedResponse } from 'src/common/decorators/api-paginated-response.decorator';
 
-import { CreateProductDTO } from './dto/createProduct.dto';
-import { UpdateProductDTO } from './dto/updateProduct.dto';
-import { PaginationResponseDTO } from 'src/common/dto/paginationResponse.dto';
-import { QueryProductDTO } from './dto/queryProduct.dto';
-import { PaginationMetaDTO } from 'src/common/dto/paginationMeta.dto';
-import { ErrorResponseDTO } from 'src/common/dto/errorResponse.dto';
-import { ResponseProductListDTO } from './dto/responseProductList.dto';
-import { ResponseProductOneDTO } from './dto/responseProductOne.dto';
+import { CreateProductDTO } from './dto/create-product.dto';
+import { UpdateProductDTO } from './dto/update-product.dto';
+import { PaginationResponseDTO } from 'src/common/dto/pagination-response.dto';
+import { QueryProductDTO } from './dto/query-product.dto';
+import { PaginationMetaDTO } from 'src/common/dto/pagination-meta.dto';
+import { ErrorResponseDTO } from 'src/common/dto/error-response.dto';
+import { ResponseProductListDTO } from './dto/response-product-list.dto';
+import { ResponseProductOneDTO } from './dto/response-product-one.dto';
 
 @ApiTags('Продукты')
 @Controller('products')

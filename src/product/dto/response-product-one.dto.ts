@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 
-import { ResponseProductDTO } from './responseProduct.dto';
+import { ResponseProductDTO } from './response-product.dto';
 import { ResponseProductImageDTO } from 'src/productImage/dto/response-product-image.dto';
 
 export class ResponseProductOneDTO extends ResponseProductDTO {

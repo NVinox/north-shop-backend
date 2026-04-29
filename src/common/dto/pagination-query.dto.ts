@@ -2,7 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
-import { ESortProperty } from '../enums/sortProperty.enum';
+import { ESortProperty } from '../enums/sort-property.enum';
 
 export class PaginationQueryDTO {
   @ApiPropertyOptional({

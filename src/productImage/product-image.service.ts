@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import * as fsPromises from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 
-import { ProductImageEntity } from './entities/productImage.entity';
+import { ProductImageEntity } from './entities/product-image.entity';
 import { CreateProductImageDTO } from './dto/create-product-image.dto';
 
 @Injectable()

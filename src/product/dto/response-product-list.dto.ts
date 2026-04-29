@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Transform } from 'class-transformer';
 
-import { ResponseProductDTO } from './responseProduct.dto';
+import { ResponseProductDTO } from './response-product.dto';
 
 export class ResponseProductListDTO extends ResponseProductDTO {
   @ApiProperty({

@@ -1,6 +1,6 @@
 import { ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
 import { applyDecorators, Type } from '@nestjs/common';
-import { PaginationMetaDTO } from '../dto/paginationMeta.dto';
+import { PaginationMetaDTO } from '../dto/pagination-meta.dto';
 
 export const ApiPaginatedResponse = <TModel extends Type<any>>(
   model: TModel,

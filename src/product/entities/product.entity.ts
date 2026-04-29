@@ -9,8 +9,8 @@ import {
 } from 'typeorm';
 
 import { PriceTransformer } from 'src/common/transformers/price.transformer';
-import { ReviewAvgTransformer } from 'src/common/transformers/reviewAvg.transformer';
-import { ProductImageEntity } from 'src/productImage/entities/productImage.entity';
+import { ReviewAvgTransformer } from 'src/common/transformers/review-avg.transformer';
+import { ProductImageEntity } from 'src/productImage/entities/product-image.entity';
 
 @Entity({ name: 'products' })
 @Check(`"price" >= 0`)

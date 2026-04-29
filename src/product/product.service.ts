@@ -7,10 +7,10 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { ProductEntity } from './entities/product.entity';
-import { CreateProductDTO } from './dto/createProduct.dto';
-import { UpdateProductDTO } from './dto/updateProduct.dto';
-import { QueryProductDTO } from './dto/queryProduct.dto';
-import { PaginationResponseDTO } from 'src/common/dto/paginationResponse.dto';
+import { CreateProductDTO } from './dto/create-product.dto';
+import { UpdateProductDTO } from './dto/update-product.dto';
+import { QueryProductDTO } from './dto/query-product.dto';
+import { PaginationResponseDTO } from 'src/common/dto/pagination-response.dto';
 
 import { ProductImageService } from 'src/productImage/product-image.service';
 import { CreateProductImageDTO } from 'src/productImage/dto/create-product-image.dto';
