@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { PaginationMetaDTO } from './paginationMeta.dto';
+import { PaginationMetaDTO } from './pagination-meta.dto';
 
 export class PaginationResponseDTO<T> {
   @Expose()

@@ -1,8 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
-import { PaginationQueryDTO } from 'src/common/dto/paginationQuery.dto';
-import { EProductSortBy } from '../enums/productSortBy.enum';
+import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
+import { EProductSortBy } from '../enums/product-sort-by.enum';
 
 export class QueryProductDTO extends PaginationQueryDTO {
   @ApiPropertyOptional({

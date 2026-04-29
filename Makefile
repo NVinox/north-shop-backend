@@ -9,11 +9,17 @@ dev:
 stop-dev:
 	$(DC_DEV) stop
 
+down-dev:
+	$(DC_DEV) down
+
 prod:
 	$(DC_PROD) up --build -d
 
 stop-prod:
 	$(DC_PROD) stop
+
+down-prod:
+	$(DC_PROD) down
 
 clean:
 	$(DC_DEV) down -v --rmi all
