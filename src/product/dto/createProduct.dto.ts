@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsInt,
   IsNotEmpty,
@@ -30,6 +31,7 @@ export class CreateProductDTO {
   })
   @IsNumber()
   @IsNotEmpty()
+  @Type(() => Number)
   @IsPositive()
   price!: number;
 
@@ -50,7 +52,16 @@ export class CreateProductDTO {
   })
   @IsInt()
   @IsOptional()
+  @Type(() => Number)
   @Max(100)
   @Min(0)
   discount!: number;
+
+  @ApiPropertyOptional({
+    description: 'Массив изображений',
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
+  })
+  @IsOptional()
+  images!: any[];
 }

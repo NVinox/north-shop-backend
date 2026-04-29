@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+
 import { ProductModule } from './product/product.module';
 import { getDatabaseConfig } from './config/database.config';
-import { ProductImageModule } from './productImage/productImage.module';
+import { ProductImageModule } from './productImage/product-image.module';
+import { serveStaticConfig } from './config/serve-static.config';
 
 @Module({
   imports: [
@@ -16,6 +19,7 @@ import { ProductImageModule } from './productImage/productImage.module';
       useFactory: getDatabaseConfig,
       inject: [ConfigService],
     }),
+    ServeStaticModule.forRoot(serveStaticConfig),
     ProductModule,
     ProductImageModule,
   ],

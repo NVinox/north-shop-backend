@@ -5,17 +5,22 @@ import {
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+
 import { ProductEntity } from './entities/product.entity';
 import { CreateProductDTO } from './dto/createProduct.dto';
 import { UpdateProductDTO } from './dto/updateProduct.dto';
 import { QueryProductDTO } from './dto/queryProduct.dto';
 import { PaginationResponseDTO } from 'src/common/dto/paginationResponse.dto';
 
+import { ProductImageService } from 'src/productImage/product-image.service';
+import { CreateProductImageDTO } from 'src/productImage/dto/create-product-image.dto';
+
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(ProductEntity)
     private readonly productRepository: Repository<ProductEntity>,
+    private readonly productImageService: ProductImageService,
   ) {}
 
   async getAll(
@@ -74,21 +79,23 @@ export class ProductService {
     return product;
   }
 
-  async create(dto: CreateProductDTO): Promise<ProductEntity> {
+  async create(
+    dto: CreateProductDTO,
+    files: Express.Multer.File[],
+  ): Promise<ProductEntity> {
     await this.existSku(dto.sku);
 
     const product = this.productRepository.create(dto);
-
-    this.calculatePrice(product);
-
     const createdProduct = await this.productRepository.save(product);
+
+    await this.createProductImage(createdProduct.id, files);
 
     return await this.getOne(createdProduct.id);
   }
 
   async update(id: number, dto: UpdateProductDTO): Promise<ProductEntity> {
     if (dto.sku) {
-      await this.existSku(dto.sku);
+      await this.existSku(dto.sku, id);
     }
 
     const product = await this.getOne(id);
@@ -107,11 +114,17 @@ export class ProductService {
     return true;
   }
 
-  private async existSku(sku: string): Promise<void> {
-    const exists = await this.productRepository.findOneBy({ sku });
+  private async existSku(sku: string, productId?: number): Promise<void> {
+    const product = await this.productRepository.findOneBy({ sku });
 
-    if (exists) {
-      throw new ConflictException('sku is already taken');
+    if (productId) {
+      if (product && product.id !== productId) {
+        throw new ConflictException('sku is already taken');
+      }
+    } else {
+      if (product) {
+        throw new ConflictException('sku is already taken');
+      }
     }
   }
 
@@ -122,6 +135,25 @@ export class ProductService {
       );
     } else {
       product.oldPrice = null;
+    }
+  }
+
+  private async createProductImage(
+    productId: number,
+    files: Express.Multer.File[],
+  ) {
+    if (files && files.length) {
+      for (const [index, file] of files.entries()) {
+        const imageDTO: CreateProductImageDTO = {
+          productId,
+        };
+
+        if (!index) {
+          imageDTO.isMain = true;
+        }
+
+        await this.productImageService.create(imageDTO, file);
+      }
     }
   }
 }

@@ -2,16 +2,22 @@ import {
   Body,
   Controller,
   Delete,
+  FileTypeValidator,
   Get,
+  MaxFileSizeValidator,
   Param,
+  ParseFilePipe,
   ParseIntPipe,
   Patch,
   Post,
   Query,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiExtraModels,
   ApiNotFoundResponse,
@@ -20,6 +26,7 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { plainToInstance } from 'class-transformer';
 import { ProductService } from './product.service';
 
@@ -27,7 +34,6 @@ import { ApiPaginatedResponse } from 'src/common/decorators/apiPaginatedResponse
 
 import { CreateProductDTO } from './dto/createProduct.dto';
 import { UpdateProductDTO } from './dto/updateProduct.dto';
-import { ResponseProductDTO } from './dto/responseProduct.dto';
 import { PaginationResponseDTO } from 'src/common/dto/paginationResponse.dto';
 import { QueryProductDTO } from './dto/queryProduct.dto';
 import { PaginationMetaDTO } from 'src/common/dto/paginationMeta.dto';
@@ -105,9 +111,23 @@ export class ProductController {
     description: 'Конфликт создания продукта',
     type: ErrorResponseDTO,
   })
+  @ApiConsumes('multipart/form-data')
   @Post()
-  async create(@Body() dto: CreateProductDTO): Promise<ResponseProductOneDTO> {
-    const product = await this.productService.create(dto);
+  @UseInterceptors(FilesInterceptor('images'))
+  async create(
+    @Body() dto: CreateProductDTO,
+    @UploadedFiles(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }),
+          new FileTypeValidator({ fileType: '.(png|jpeg|jpg|webp)$' }),
+        ],
+        fileIsRequired: false,
+      }),
+    )
+    files: Express.Multer.File[],
+  ): Promise<ResponseProductOneDTO> {
+    const product = await this.productService.create(dto, files);
 
     return plainToInstance(ResponseProductOneDTO, product, {
       excludeExtraneousValues: true,

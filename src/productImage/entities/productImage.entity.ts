@@ -20,6 +20,9 @@ export class ProductImageEntity {
   @Column({ name: 'is_main', type: 'boolean', default: false })
   isMain!: boolean;
 
+  @Column({ name: 'product_id' })
+  productId!: number;
+
   @ManyToOne(() => ProductEntity, ({ images }) => images, {
     onDelete: 'CASCADE',
   })
