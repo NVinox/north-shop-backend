@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
+import { config } from 'dotenv';
+
+config({ path: `.env.${process.env.NODE_ENV || 'development'}.local` });
 
 export class ResponseProductImageDTO {
   @ApiProperty({
@@ -13,8 +16,11 @@ export class ResponseProductImageDTO {
   @ApiProperty({
     description: 'ID картинки',
     type: 'string',
-    example: 'https://www.example.com/assets/image.jpg',
+    example: 'https://www.example.com/static/image.jpg',
   })
+  @Transform(
+    ({ obj }) => `${process.env.API_URL}/${process.env.STATIC_PATH}/${obj.url}`,
+  )
   @Expose()
   url!: string;
 

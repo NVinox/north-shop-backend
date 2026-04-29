@@ -109,6 +109,10 @@ export class ProductService {
   async delete(id: number): Promise<boolean> {
     const product = await this.getOne(id);
 
+    for (const image of product.images) {
+      await this.productImageService.removeImage(image.url);
+    }
+
     await this.productRepository.remove(product);
 
     return true;

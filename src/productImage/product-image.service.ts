@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as fsPromises from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 
 import { ProductImageEntity } from './entities/productImage.entity';
@@ -39,6 +40,14 @@ export class ProductImageService {
     return await this.getOne(image.id);
   }
 
+  async removeImage(url: string) {
+    const filePath = path.join(process.cwd(), 'uploads', url);
+
+    if (fs.existsSync(filePath)) {
+      await fsPromises.unlink(filePath);
+    }
+  }
+
   private upload(file: Express.Multer.File): string {
     const fileExt = path.extname(file.originalname);
     const fileName = `${uuidv4()}${fileExt}`;
@@ -51,6 +60,6 @@ export class ProductImageService {
 
     fs.writeFileSync(filePath, file.buffer);
 
-    return `/static/${fileName}`;
+    return fileName;
   }
 }
