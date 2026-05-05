@@ -7,7 +7,15 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Res,
+} from '@nestjs/common';
+import type { Response } from 'express';
 
 import { UserAgent } from 'src/common/decorators/user-agent.decorator';
 import { AuthService } from './auth.service';
@@ -16,8 +24,8 @@ import {
   ErrorResponseDTO,
   ErrorUnauthorizedResponseDTO,
 } from 'src/common/dto/error-response.dto';
-import { JWTTokensResponseDTO } from './dto/jwt-tokens-response.dto';
 import { LoginRequestDTO } from './dto/login-request.dto';
+import { JWTAccessTokenResponseDTO } from './dto/jwt-access-token-response.dto';
 
 @ApiTags('Авторизация')
 @Controller('auth')
@@ -30,7 +38,7 @@ export class AuthController {
   })
   @ApiCreatedResponse({
     description: 'Ползователь зарегистрирован',
-    type: JWTTokensResponseDTO,
+    type: JWTAccessTokenResponseDTO,
   })
   @ApiBadRequestResponse({
     description: 'Ошибка неправильного запроса',
@@ -42,10 +50,11 @@ export class AuthController {
   })
   @Post('register')
   async register(
+    @Res({ passthrough: true }) res: Response,
     @Body() dto: RegisterRequestDTO,
     @UserAgent() userAgent: string,
-  ): Promise<JWTTokensResponseDTO> {
-    return await this.authService.register(dto, userAgent);
+  ): Promise<JWTAccessTokenResponseDTO> {
+    return await this.authService.register(res, dto, userAgent);
   }
 
   @ApiOperation({
@@ -54,7 +63,7 @@ export class AuthController {
   })
   @ApiOkResponse({
     description: 'Ползователь авторизован',
-    type: JWTTokensResponseDTO,
+    type: JWTAccessTokenResponseDTO,
   })
   @ApiBadRequestResponse({
     description: 'Ошибка неправильного запроса',
@@ -71,9 +80,10 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(
+    @Res({ passthrough: true }) res: Response,
     @Body() dto: LoginRequestDTO,
     @UserAgent() userAgent: string,
-  ): Promise<JWTTokensResponseDTO> {
-    return await this.authService.login(dto, userAgent);
+  ): Promise<JWTAccessTokenResponseDTO> {
+    return await this.authService.login(res, dto, userAgent);
   }
 }

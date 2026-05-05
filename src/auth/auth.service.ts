@@ -6,17 +6,21 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import type { Response } from 'express';
+import { DataSource, EntityManager, Repository } from 'typeorm';
+import ms, { StringValue } from 'ms';
 import * as bcrypt from 'bcrypt';
 
 import { EUserRole } from './enums/user-role.enum';
 
 import { UserEntity } from './entities/user.entity';
 import { JWTTokensResponseDTO } from './dto/jwt-tokens-response.dto';
+import { JWTAccessTokenResponseDTO } from './dto/jwt-access-token-response.dto';
 import { RegisterRequestDTO } from './dto/register-request.dto';
 import { IJwtPayload } from './interfaces/jwt.interface';
 import { RefreshTokenService } from 'src/refresh-token/refresh-token.service';
 import { LoginRequestDTO } from './dto/login-request.dto';
+import { isDev } from 'src/utils/is-dev.util';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +28,8 @@ export class AuthService {
 
   private readonly JWT_ACCESS_TOKEN_TTL: string;
   private readonly JWT_REFRESH_TOKEN_TTL: string;
+
+  private readonly COOKIE_DOMAIN: string;
 
   constructor(
     @InjectRepository(UserEntity)
@@ -42,12 +48,14 @@ export class AuthService {
     this.JWT_REFRESH_TOKEN_TTL = this.configService.getOrThrow<string>(
       'JWT_REFRESH_TOKEN_TTL',
     );
+    this.COOKIE_DOMAIN = this.configService.getOrThrow<string>('COOKIE_DOMAIN');
   }
 
   async register(
+    res: Response,
     dto: RegisterRequestDTO,
     userAgent: string,
-  ): Promise<JWTTokensResponseDTO> {
+  ): Promise<JWTAccessTokenResponseDTO> {
     return await this.dataSource.transaction(async (manager) => {
       await this.isExistUser(dto.email);
 
@@ -62,6 +70,8 @@ export class AuthService {
         createdUser.role,
       );
 
+      this.setCookie(res, refreshToken);
+
       await this.refreshTokenService.create(
         {
           userId: createdUser.id,
@@ -71,14 +81,15 @@ export class AuthService {
         manager,
       );
 
-      return { accessToken, refreshToken };
+      return { accessToken };
     });
   }
 
   async login(
+    res: Response,
     dto: LoginRequestDTO,
     userAgent: string,
-  ): Promise<JWTTokensResponseDTO> {
+  ): Promise<JWTAccessTokenResponseDTO> {
     const user = await this.userRepository.findOneBy({ email: dto.email });
 
     if (!user) {
@@ -99,13 +110,29 @@ export class AuthService {
       user.role,
     );
 
+    this.setCookie(res, refreshToken);
+
     await this.refreshTokenService.create({
       userId: user.id,
       token: refreshToken,
       userAgent,
     });
 
-    return { accessToken, refreshToken };
+    return { accessToken };
+  }
+
+  private setCookie(res: Response, value: string) {
+    const expires = new Date(
+      Date.now() + ms(this.JWT_REFRESH_TOKEN_TTL as StringValue),
+    );
+
+    res.cookie('refreshToken', value, {
+      httpOnly: true,
+      domain: this.COOKIE_DOMAIN,
+      secure: !isDev(this.configService),
+      sameSite: isDev(this.configService) ? 'none' : 'lax',
+      expires,
+    });
   }
 
   private generateTokens(id: number, role: EUserRole): JWTTokensResponseDTO {
