@@ -1,13 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
-export class RegisterRequestDTO {
+import { LoginRequestDTO } from './login-request.dto';
+
+export class RegisterRequestDTO extends LoginRequestDTO {
   @ApiProperty({
     description: 'Имя пользователя',
     type: 'string',
@@ -17,25 +13,4 @@ export class RegisterRequestDTO {
   @IsNotEmpty()
   @MaxLength(50)
   name!: string;
-
-  @ApiProperty({
-    description: 'Email пользователя',
-    type: 'string',
-    example: 'example@gmail.com',
-  })
-  @IsString()
-  @IsEmail()
-  @IsNotEmpty()
-  email!: string;
-
-  @ApiProperty({
-    description: 'Пароль пользователя',
-    type: 'string',
-    example: 'qwerty123',
-  })
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(5)
-  @MaxLength(128)
-  password!: string;
 }

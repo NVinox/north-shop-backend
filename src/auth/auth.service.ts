@@ -1,7 +1,11 @@
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
@@ -12,6 +16,7 @@ import { JWTTokensResponseDTO } from './dto/jwt-tokens-response.dto';
 import { RegisterRequestDTO } from './dto/register-request.dto';
 import { IJwtPayload } from './interfaces/jwt.interface';
 import { RefreshTokenService } from 'src/refresh-token/refresh-token.service';
+import { LoginRequestDTO } from './dto/login-request.dto';
 
 @Injectable()
 export class AuthService {
@@ -68,6 +73,39 @@ export class AuthService {
 
       return { accessToken, refreshToken };
     });
+  }
+
+  async login(
+    dto: LoginRequestDTO,
+    userAgent: string,
+  ): Promise<JWTTokensResponseDTO> {
+    const user = await this.userRepository.findOneBy({ email: dto.email });
+
+    if (!user) {
+      throw new UnauthorizedException('Email or password incorrect');
+    }
+
+    const isComparePasswords = await this.comparePasswords(
+      dto.password,
+      user.password,
+    );
+
+    if (!isComparePasswords) {
+      throw new UnauthorizedException('Email or password incorrect');
+    }
+
+    const { accessToken, refreshToken } = this.generateTokens(
+      user.id,
+      user.role,
+    );
+
+    await this.refreshTokenService.create({
+      userId: user.id,
+      token: refreshToken,
+      userAgent,
+    });
+
+    return { accessToken, refreshToken };
   }
 
   private generateTokens(id: number, role: EUserRole): JWTTokensResponseDTO {

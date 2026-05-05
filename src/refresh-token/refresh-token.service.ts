@@ -40,14 +40,17 @@ export class RefreshTokenService {
       expiresAt,
       hash,
     };
+    const repo = manager
+      ? manager.getRepository(RefreshTokenEntity)
+      : this.refreshTokenRepository;
 
-    if (manager) {
-      const memoryToken = manager.create(RefreshTokenEntity, data);
-      await manager.save(RefreshTokenEntity, memoryToken);
-    } else {
-      const memoryToken = this.refreshTokenRepository.create(data);
-      await this.refreshTokenRepository.save(memoryToken);
-    }
+    await repo.delete({
+      userId: data.userId,
+      userAgent: data.userAgent,
+    });
+
+    const memoryToken = repo.create(data);
+    await repo.save(memoryToken);
 
     return true;
   }
