@@ -10,6 +10,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterRequestDTO } from './dto/register-request.dto';
 import { ErrorResponseDTO } from 'src/common/dto/error-response.dto';
+import { IJwtTokens } from './interfaces/jwt.interface';
 
 @ApiTags('Авторизация')
 @Controller('auth')
@@ -34,7 +35,7 @@ export class AuthController {
     type: ErrorResponseDTO,
   })
   @Post('register')
-  async register(@Body() dto: RegisterRequestDTO): Promise<boolean> {
+  async register(@Body() dto: RegisterRequestDTO): Promise<IJwtTokens> {
     return await this.authService.register(dto);
   }
 }
