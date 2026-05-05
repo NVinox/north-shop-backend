@@ -4,9 +4,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   PrimaryGeneratedColumn,
+  OneToMany,
 } from 'typeorm';
 
 import { EUserRole } from '../enums/user-role.enum';
+import { RefreshTokenEntity } from 'src/refresh-token/entities/refresh-token.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -24,6 +26,11 @@ export class UserEntity {
 
   @Column({ type: 'enum', enum: EUserRole, default: EUserRole.USER })
   role!: EUserRole;
+
+  @OneToMany(() => RefreshTokenEntity, ({ user }) => user, {
+    cascade: true,
+  })
+  refreshTokens!: RefreshTokenEntity[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

@@ -3,10 +3,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+import { UserEntity } from './entities/user.entity';
+
+import { getJwtConfig } from 'src/config/jwt.config';
+import { RefreshTokenModule } from 'src/refresh-token/refresh-token.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { UserEntity } from './entities/user.entity';
-import { getJwtConfig } from 'src/config/jwt.config';
 
 @Module({
   imports: [
@@ -16,6 +18,7 @@ import { getJwtConfig } from 'src/config/jwt.config';
       useFactory: getJwtConfig,
       inject: [ConfigService],
     }),
+    RefreshTokenModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

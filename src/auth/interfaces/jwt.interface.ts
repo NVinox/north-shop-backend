@@ -4,8 +4,3 @@ export interface IJwtPayload {
   id: number;
   role: EUserRole;
 }
-
-export interface IJwtTokens {
-  accessToken: string;
-  refreshToken: string;
-}

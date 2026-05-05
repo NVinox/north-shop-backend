@@ -2,14 +2,16 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { ConflictException, Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
 import { EUserRole } from './enums/user-role.enum';
 
 import { UserEntity } from './entities/user.entity';
+import { JWTTokensResponseDTO } from './dto/jwt-tokens-response.dto';
 import { RegisterRequestDTO } from './dto/register-request.dto';
-import { IJwtPayload, IJwtTokens } from './interfaces/jwt.interface';
+import { IJwtPayload } from './interfaces/jwt.interface';
+import { RefreshTokenService } from 'src/refresh-token/refresh-token.service';
 
 @Injectable()
 export class AuthService {
@@ -23,32 +25,52 @@ export class AuthService {
     private readonly userRepository: Repository<UserEntity>,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly refreshTokenService: RefreshTokenService,
+    private readonly dataSource: DataSource,
   ) {
     this.SALT_ROUNDS =
       +this.configService.getOrThrow<string>('BCRYPT_SALT_ROUNDS');
 
-    ((this.JWT_ACCESS_TOKEN_TTL = this.configService.getOrThrow<string>(
+    this.JWT_ACCESS_TOKEN_TTL = this.configService.getOrThrow<string>(
       'JWT_ACCESS_TOKEN_TTL',
-    )),
-      (this.JWT_REFRESH_TOKEN_TTL = this.configService.getOrThrow<string>(
-        'JWT_REFRESH_TOKEN_TTL',
-      )));
+    );
+    this.JWT_REFRESH_TOKEN_TTL = this.configService.getOrThrow<string>(
+      'JWT_REFRESH_TOKEN_TTL',
+    );
   }
 
-  async register(dto: RegisterRequestDTO): Promise<IJwtTokens> {
-    await this.isExistUser(dto.email);
+  async register(
+    dto: RegisterRequestDTO,
+    userAgent: string,
+  ): Promise<JWTTokensResponseDTO> {
+    return await this.dataSource.transaction(async (manager) => {
+      await this.isExistUser(dto.email);
 
-    const hash = await this.hashPassword(dto.password);
-    const memoryUser = this.userRepository.create({
-      ...dto,
-      password: hash,
+      const hash = await this.hashPassword(dto.password);
+      const memoryUser = manager.create(UserEntity, {
+        ...dto,
+        password: hash,
+      });
+      const createdUser = await manager.save(memoryUser);
+      const { accessToken, refreshToken } = this.generateTokens(
+        createdUser.id,
+        createdUser.role,
+      );
+
+      await this.refreshTokenService.create(
+        {
+          userId: createdUser.id,
+          token: refreshToken,
+          userAgent,
+        },
+        manager,
+      );
+
+      return { accessToken, refreshToken };
     });
-    const createdUser = await this.userRepository.save(memoryUser);
-
-    return this.generateTokens(createdUser.id, createdUser.role);
   }
 
-  private generateTokens(id: number, role: EUserRole): IJwtTokens {
+  private generateTokens(id: number, role: EUserRole): JWTTokensResponseDTO {
     const payload: IJwtPayload = {
       id,
       role,

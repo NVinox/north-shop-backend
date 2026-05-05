@@ -8,6 +8,7 @@ import { ProductModule } from './product/product.module';
 import { getDatabaseConfig } from './config/database.config';
 import { ProductImageModule } from './productImage/product-image.module';
 import { serveStaticConfig } from './config/serve-static.config';
+import { RefreshTokenModule } from './refresh-token/refresh-token.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { serveStaticConfig } from './config/serve-static.config';
     ProductModule,
     ProductImageModule,
     AuthModule,
+    RefreshTokenModule,
   ],
 })
 export class AppModule {}
