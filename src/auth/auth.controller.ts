@@ -1,6 +1,8 @@
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiConflictResponse,
+  ApiCookieAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -29,6 +31,7 @@ import {
 import { LoginRequestDTO } from './dto/login-request.dto';
 import { JWTAccessTokenResponseDTO } from './dto/jwt-access-token-response.dto';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @ApiTags('Авторизация')
 @Controller('auth')
@@ -91,6 +94,35 @@ export class AuthController {
   }
 
   @ApiOperation({
+    summary: 'Выход',
+    description: 'Метод выхода пользователя',
+  })
+  @ApiOkResponse({
+    description: 'Успешный выход',
+    type: 'boolean',
+    example: true,
+  })
+  @ApiBadRequestResponse({
+    description: 'Ошибка неправильного запроса',
+    type: ErrorResponseDTO,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Ошибка авторизации',
+    type: ErrorUnauthorizedResponseDTO,
+  })
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('logout')
+  async logout(
+    @Res({ passthrough: true }) res: Response,
+    @Req() req,
+    @UserAgent() userAgent: string,
+  ): Promise<boolean> {
+    return await this.authService.logout(res, req.user.id, userAgent);
+  }
+
+  @ApiOperation({
     summary: 'Ротация токенов',
     description: 'Метод ротации токенов',
   })
@@ -106,6 +138,7 @@ export class AuthController {
     description: 'Ошибка авторизации',
     type: ErrorUnauthorizedResponseDTO,
   })
+  @ApiCookieAuth('refresh-token')
   @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.OK)
   @Post('refresh')

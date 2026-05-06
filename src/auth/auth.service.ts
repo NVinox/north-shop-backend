@@ -131,6 +131,19 @@ export class AuthService {
     return { accessToken };
   }
 
+  async logout(
+    res: Response,
+    userId: number,
+    userAgent: string,
+  ): Promise<boolean> {
+    const session = await this.refreshTokenService.getOne(userId, userAgent);
+
+    await this.refreshTokenService.delete(session);
+    this.clearCookie(res);
+
+    return true;
+  }
+
   async refresh(
     res: Response,
     userId: number,
@@ -138,7 +151,6 @@ export class AuthService {
     token: string,
   ): Promise<JWTAccessTokenResponseDTO> {
     const session = await this.refreshTokenService.getOne(userId, userAgent);
-
     const isMatch = await bcrypt.compare(token, session.hash);
 
     if (!isMatch) {
@@ -190,6 +202,14 @@ export class AuthService {
       sameSite: isDev(this.configService) ? 'none' : 'lax',
       path: 'api/auth',
       expires,
+    });
+  }
+
+  private clearCookie(res: Response) {
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      domain: this.COOKIE_DOMAIN,
+      path: 'api/auth',
     });
   }
 
