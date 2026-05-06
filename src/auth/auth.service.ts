@@ -200,7 +200,7 @@ export class AuthService {
       domain: this.COOKIE_DOMAIN,
       secure: !isDev(this.configService),
       sameSite: isDev(this.configService) ? 'none' : 'lax',
-      path: 'api/auth',
+      path: '/api/auth',
       expires,
     });
   }
@@ -209,7 +209,7 @@ export class AuthService {
     res.clearCookie('refreshToken', {
       httpOnly: true,
       domain: this.COOKIE_DOMAIN,
-      path: 'api/auth',
+      path: '/api/auth',
     });
   }
 
