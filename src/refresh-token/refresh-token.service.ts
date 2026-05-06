@@ -1,6 +1,6 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { EntityManager, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import ms, { StringValue } from 'ms';
@@ -24,6 +24,24 @@ export class RefreshTokenService {
     this.JWT_REFRESH_TOKEN_TTL = this.configService.getOrThrow<string>(
       'JWT_REFRESH_TOKEN_TTL',
     );
+  }
+
+  async getOne(
+    userId: number,
+    userAgent?: string,
+  ): Promise<RefreshTokenEntity> {
+    const token = await this.refreshTokenRepository.findOne({
+      where: {
+        userId,
+        userAgent,
+      },
+    });
+
+    if (!token) {
+      throw new UnauthorizedException('Token not found');
+    }
+
+    return token;
   }
 
   async create(
@@ -51,6 +69,12 @@ export class RefreshTokenService {
 
     const memoryToken = repo.create(data);
     await repo.save(memoryToken);
+
+    return true;
+  }
+
+  async delete(token: RefreshTokenEntity): Promise<boolean> {
+    await this.refreshTokenRepository.remove(token);
 
     return true;
   }

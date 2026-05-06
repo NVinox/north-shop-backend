@@ -13,7 +13,9 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
 
@@ -26,6 +28,7 @@ import {
 } from 'src/common/dto/error-response.dto';
 import { LoginRequestDTO } from './dto/login-request.dto';
 import { JWTAccessTokenResponseDTO } from './dto/jwt-access-token-response.dto';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 
 @ApiTags('Авторизация')
 @Controller('auth')
@@ -85,5 +88,37 @@ export class AuthController {
     @UserAgent() userAgent: string,
   ): Promise<JWTAccessTokenResponseDTO> {
     return await this.authService.login(res, dto, userAgent);
+  }
+
+  @ApiOperation({
+    summary: 'Ротация токенов',
+    description: 'Метод ротации токенов',
+  })
+  @ApiOkResponse({
+    description: 'Токены обновлены',
+    type: JWTAccessTokenResponseDTO,
+  })
+  @ApiBadRequestResponse({
+    description: 'Ошибка неправильного запроса',
+    type: ErrorResponseDTO,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Ошибка авторизации',
+    type: ErrorUnauthorizedResponseDTO,
+  })
+  @UseGuards(JwtRefreshGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh')
+  async refresh(
+    @Res({ passthrough: true }) res: Response,
+    @Req() req,
+    @UserAgent() userAgent: string,
+  ): Promise<JWTAccessTokenResponseDTO> {
+    return await this.authService.refresh(
+      res,
+      req.user.id,
+      userAgent,
+      req.user.refreshToken,
+    );
   }
 }

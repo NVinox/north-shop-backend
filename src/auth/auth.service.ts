@@ -4,10 +4,11 @@ import { ConfigService } from '@nestjs/config';
 import {
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import ms, { StringValue } from 'ms';
 import * as bcrypt from 'bcrypt';
 
@@ -25,6 +26,9 @@ import { isDev } from 'src/utils/is-dev.util';
 @Injectable()
 export class AuthService {
   private readonly SALT_ROUNDS: number;
+
+  private readonly JWT_ACCESS_TOKEN_SECRET: string;
+  private readonly JWT_REFRESH_TOKEN_SECRET: string;
 
   private readonly JWT_ACCESS_TOKEN_TTL: string;
   private readonly JWT_REFRESH_TOKEN_TTL: string;
@@ -47,6 +51,12 @@ export class AuthService {
     );
     this.JWT_REFRESH_TOKEN_TTL = this.configService.getOrThrow<string>(
       'JWT_REFRESH_TOKEN_TTL',
+    );
+    this.JWT_ACCESS_TOKEN_SECRET = this.configService.getOrThrow<string>(
+      'JWT_ACCESS_TOKEN_SECRET',
+    );
+    this.JWT_REFRESH_TOKEN_SECRET = this.configService.getOrThrow<string>(
+      'JWT_REFRESH_TOKEN_SECRET',
     );
     this.COOKIE_DOMAIN = this.configService.getOrThrow<string>('COOKIE_DOMAIN');
   }
@@ -96,7 +106,7 @@ export class AuthService {
       throw new UnauthorizedException('Email or password incorrect');
     }
 
-    const isComparePasswords = await this.comparePasswords(
+    const isComparePasswords = await bcrypt.compare(
       dto.password,
       user.password,
     );
@@ -121,16 +131,64 @@ export class AuthService {
     return { accessToken };
   }
 
-  private setCookie(res: Response, value: string) {
-    const expires = new Date(
-      Date.now() + ms(this.JWT_REFRESH_TOKEN_TTL as StringValue),
+  async refresh(
+    res: Response,
+    userId: number,
+    userAgent: string,
+    token: string,
+  ): Promise<JWTAccessTokenResponseDTO> {
+    const session = await this.refreshTokenService.getOne(userId, userAgent);
+
+    const isMatch = await bcrypt.compare(token, session.hash);
+
+    if (!isMatch) {
+      await this.refreshTokenService.delete(session);
+      throw new UnauthorizedException('Token manipulation detected');
+    }
+
+    const user = await this.userRepository.findOneBy({ id: userId });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const { accessToken, refreshToken } = this.generateTokens(
+      user.id,
+      user.role,
     );
 
+    this.setCookie(res, refreshToken);
+
+    await this.refreshTokenService.create({
+      userId: user.id,
+      token: refreshToken,
+      userAgent,
+    });
+
+    return { accessToken };
+  }
+
+  private calculateRefreshExpires(isCalculate: boolean = true): Date {
+    if (isCalculate) {
+      return new Date(
+        Date.now() + ms(this.JWT_REFRESH_TOKEN_TTL as StringValue),
+      );
+    }
+
+    return new Date();
+  }
+
+  private setCookie(
+    res: Response,
+    value: string,
+    expires: Date = this.calculateRefreshExpires(),
+  ) {
     res.cookie('refreshToken', value, {
       httpOnly: true,
       domain: this.COOKIE_DOMAIN,
       secure: !isDev(this.configService),
       sameSite: isDev(this.configService) ? 'none' : 'lax',
+      path: 'api/auth',
       expires,
     });
   }
@@ -142,9 +200,11 @@ export class AuthService {
     };
 
     const accessToken = this.jwtService.sign(payload, {
+      secret: this.JWT_ACCESS_TOKEN_SECRET,
       expiresIn: this.JWT_ACCESS_TOKEN_TTL as any,
     });
     const refreshToken = this.jwtService.sign(payload, {
+      secret: this.JWT_REFRESH_TOKEN_SECRET,
       expiresIn: this.JWT_REFRESH_TOKEN_TTL as any,
     });
 
@@ -153,13 +213,6 @@ export class AuthService {
 
   private async hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, this.SALT_ROUNDS);
-  }
-
-  private async comparePasswords(
-    password: string,
-    hash: string,
-  ): Promise<boolean> {
-    return await bcrypt.compare(password, hash);
   }
 
   private async isExistUser(email: string): Promise<void> {
