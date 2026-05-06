@@ -1,12 +1,15 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+import { AuthModule } from './auth/auth.module';
 import { ProductModule } from './product/product.module';
 import { getDatabaseConfig } from './config/database.config';
 import { ProductImageModule } from './productImage/product-image.module';
 import { serveStaticConfig } from './config/serve-static.config';
+import { RefreshTokenModule } from './refresh-token/refresh-token.module';
 
 @Module({
   imports: [
@@ -19,9 +22,12 @@ import { serveStaticConfig } from './config/serve-static.config';
       useFactory: getDatabaseConfig,
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
     ServeStaticModule.forRoot(serveStaticConfig),
     ProductModule,
     ProductImageModule,
+    AuthModule,
+    RefreshTokenModule,
   ],
 })
 export class AppModule {}
