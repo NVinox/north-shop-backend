@@ -1,7 +1,8 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { EntityManager, Repository } from 'typeorm';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { EntityManager, LessThan, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import ms, { StringValue } from 'ms';
 
@@ -77,6 +78,13 @@ export class RefreshTokenService {
     await this.refreshTokenRepository.remove(token);
 
     return true;
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async clearExpiredTokens() {
+    await this.refreshTokenRepository.delete({
+      expiresAt: LessThan(new Date()),
+    });
   }
 
   private async hashToken(token: string): Promise<string> {

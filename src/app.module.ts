@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
@@ -21,6 +22,7 @@ import { RefreshTokenModule } from './refresh-token/refresh-token.module';
       useFactory: getDatabaseConfig,
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
     ServeStaticModule.forRoot(serveStaticConfig),
     ProductModule,
     ProductImageModule,
