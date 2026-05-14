@@ -86,6 +86,9 @@ export class ProductService {
     await this.existSku(dto.sku);
 
     const product = this.productRepository.create(dto);
+
+    this.calculatePrice(product);
+
     const createdProduct = await this.productRepository.save(product);
 
     await this.createProductImage(createdProduct.id, files);
