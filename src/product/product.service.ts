@@ -109,6 +109,20 @@ export class ProductService {
     return await this.productRepository.save(product);
   }
 
+  async updateReviewStats(productId: number): Promise<void> {
+    const stats = await this.productRepository.manager
+      .createQueryBuilder('reviews', 'r')
+      .select('COUNT(r.id)', 'count')
+      .addSelect('AVG(r.rating)', 'avg')
+      .where('r.product_id = :productId', { productId })
+      .getRawOne();
+
+    await this.productRepository.update(productId, {
+      reviewCount: parseInt(stats.count) || 0,
+      ratingAvg: stats.avg ? parseFloat(parseFloat(stats.avg).toFixed(1)) : 0,
+    });
+  }
+
   async delete(id: number): Promise<boolean> {
     const product = await this.getOne(id);
 

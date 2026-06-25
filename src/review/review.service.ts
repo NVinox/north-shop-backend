@@ -65,7 +65,10 @@ export class ReviewService {
     }
 
     const review = this.reviewRepository.create(dto);
+    const createdReview = await this.reviewRepository.save(review);
 
-    return await this.reviewRepository.save(review);
+    await this.productService.updateReviewStats(dto.productId);
+
+    return createdReview;
   }
 }
