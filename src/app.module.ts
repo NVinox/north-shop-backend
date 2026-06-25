@@ -10,6 +10,7 @@ import { getDatabaseConfig } from './config/database.config';
 import { ProductImageModule } from './productImage/product-image.module';
 import { serveStaticConfig } from './config/serve-static.config';
 import { RefreshTokenModule } from './refresh-token/refresh-token.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { RefreshTokenModule } from './refresh-token/refresh-token.module';
     ProductImageModule,
     AuthModule,
     RefreshTokenModule,
+    ReviewModule,
   ],
 })
 export class AppModule {}
