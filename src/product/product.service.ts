@@ -121,6 +121,10 @@ export class ProductService {
     return true;
   }
 
+  async existProduct(id: number): Promise<boolean> {
+    return await this.productRepository.existsBy({ id });
+  }
+
   private async existSku(sku: string, productId?: number): Promise<void> {
     const product = await this.productRepository.findOneBy({ sku });
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -6,12 +6,18 @@ import { ReviewEntity } from './entities/review.entity';
 
 import { PaginationResponseDTO } from 'src/common/dto/pagination-response.dto';
 import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
+import { CreateReviewDTO } from './dto/create-review.dto';
+
+import { ProductService } from 'src/product/product.service';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class ReviewService {
   constructor(
     @InjectRepository(ReviewEntity)
     private readonly reviewRepository: Repository<ReviewEntity>,
+    private readonly productService: ProductService,
+    private readonly userService: AuthService,
   ) {}
 
   async getAllByProduct(
@@ -43,5 +49,23 @@ export class ReviewService {
         currentPage: page,
       },
     };
+  }
+
+  async create(dto: CreateReviewDTO) {
+    const product = await this.productService.existProduct(dto.productId);
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${dto.productId} not found`);
+    }
+
+    const user = await this.userService.existUser(dto.userId);
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${dto.productId} not found`);
+    }
+
+    const review = this.reviewRepository.create(dto);
+
+    return await this.reviewRepository.save(review);
   }
 }

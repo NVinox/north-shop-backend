@@ -1,4 +1,12 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 
 import { ReviewService } from './review.service';
@@ -6,6 +14,7 @@ import { ReviewService } from './review.service';
 import { ResponseReviewDTO } from './dto/response-review.dto';
 import { PaginationResponseDTO } from 'src/common/dto/pagination-response.dto';
 import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
+import { CreateReviewDTO } from './dto/create-review.dto';
 
 @Controller('reviews')
 export class ReviewController {
@@ -24,5 +33,14 @@ export class ReviewController {
       }),
       meta: result.meta,
     };
+  }
+
+  @Post()
+  async create(@Body() dto: CreateReviewDTO): Promise<ResponseReviewDTO> {
+    const review = await this.reviewService.create(dto);
+
+    return plainToInstance(ResponseReviewDTO, review, {
+      excludeExtraneousValues: true,
+    });
   }
 }

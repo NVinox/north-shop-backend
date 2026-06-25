@@ -180,6 +180,10 @@ export class AuthService {
     return { accessToken };
   }
 
+  async existUser(id: number): Promise<boolean> {
+    return await this.userRepository.existsBy({ id });
+  }
+
   private calculateRefreshExpires(isCalculate: boolean = true): Date {
     if (isCalculate) {
       return new Date(

@@ -1,4 +1,4 @@
-import { Expose } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 
 export class ResponseReviewDTO {
   @Expose()
@@ -11,8 +11,9 @@ export class ResponseReviewDTO {
   rating!: number;
 
   @Expose()
-  userId!: number;
-
-  @Expose()
   createdAt!: Date;
+
+  @Expose({ name: 'userName' })
+  @Transform(({ obj }) => obj.user?.name || 'Аноним')
+  userName!: string;
 }
