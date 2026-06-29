@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -42,5 +43,10 @@ export class ReviewController {
     return plainToInstance(ResponseReviewDTO, review, {
       excludeExtraneousValues: true,
     });
+  }
+
+  @Delete(':id')
+  async delete(@Param('id', ParseIntPipe) id: number): Promise<boolean> {
+    return await this.reviewService.delete(id);
   }
 }

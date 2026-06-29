@@ -51,7 +51,7 @@ export class ReviewService {
     };
   }
 
-  async create(dto: CreateReviewDTO) {
+  async create(dto: CreateReviewDTO): Promise<ReviewEntity> {
     const product = await this.productService.existProduct(dto.productId);
 
     if (!product) {
@@ -70,5 +70,18 @@ export class ReviewService {
     await this.productService.updateReviewStats(dto.productId);
 
     return createdReview;
+  }
+
+  async delete(id: number): Promise<boolean> {
+    const review = await this.reviewRepository.findOne({ where: { id } });
+
+    if (!review) {
+      throw new NotFoundException('Review not found');
+    }
+
+    await this.reviewRepository.remove(review);
+    await this.productService.updateReviewStats(review.productId);
+
+    return true;
   }
 }
