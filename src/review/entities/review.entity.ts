@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -12,6 +13,7 @@ import { ProductEntity } from 'src/product/entities/product.entity';
 import { UserEntity } from 'src/auth/entities/user.entity';
 
 @Entity({ name: 'reviews' })
+@Unique(['user', 'product'])
 export class ReviewEntity {
   @PrimaryGeneratedColumn()
   id!: number;

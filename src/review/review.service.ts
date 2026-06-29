@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -62,6 +66,17 @@ export class ReviewService {
 
     if (!user) {
       throw new NotFoundException(`User with ID ${dto.productId} not found`);
+    }
+
+    const alreadyReviewed = await this.reviewRepository.existsBy({
+      product: { id: dto.productId },
+      user: { id: dto.userId },
+    });
+
+    if (alreadyReviewed) {
+      throw new ConflictException(
+        'You have already left a review for this product',
+      );
     }
 
     const review = this.reviewRepository.create(dto);
