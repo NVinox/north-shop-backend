@@ -11,6 +11,8 @@ import { ProductImageModule } from './productImage/product-image.module';
 import { serveStaticConfig } from './config/serve-static.config';
 import { RefreshTokenModule } from './refresh-token/refresh-token.module';
 import { ReviewModule } from './review/review.module';
+import { CartModule } from './cart/cart.module';
+import { CartItemModule } from './cart-item/cart-item.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { ReviewModule } from './review/review.module';
     AuthModule,
     RefreshTokenModule,
     ReviewModule,
+    CartModule,
+    CartItemModule,
   ],
 })
 export class AppModule {}
