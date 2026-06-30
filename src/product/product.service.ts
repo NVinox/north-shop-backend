@@ -86,6 +86,9 @@ export class ProductService {
     await this.existSku(dto.sku);
 
     const product = this.productRepository.create(dto);
+
+    this.calculatePrice(product);
+
     const createdProduct = await this.productRepository.save(product);
 
     await this.createProductImage(createdProduct.id, files);
@@ -106,6 +109,20 @@ export class ProductService {
     return await this.productRepository.save(product);
   }
 
+  async updateReviewStats(productId: number): Promise<void> {
+    const stats = await this.productRepository.manager
+      .createQueryBuilder('reviews', 'r')
+      .select('COUNT(r.id)', 'count')
+      .addSelect('AVG(r.rating)', 'avg')
+      .where('r.product_id = :productId', { productId })
+      .getRawOne();
+
+    await this.productRepository.update(productId, {
+      reviewCount: parseInt(stats.count) || 0,
+      ratingAvg: stats.avg ? parseFloat(parseFloat(stats.avg).toFixed(1)) : 0,
+    });
+  }
+
   async delete(id: number): Promise<boolean> {
     const product = await this.getOne(id);
 
@@ -116,6 +133,10 @@ export class ProductService {
     await this.productRepository.remove(product);
 
     return true;
+  }
+
+  async existProduct(id: number): Promise<boolean> {
+    return await this.productRepository.existsBy({ id });
   }
 
   private async existSku(sku: string, productId?: number): Promise<void> {

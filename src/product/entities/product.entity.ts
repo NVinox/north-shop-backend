@@ -11,6 +11,7 @@ import {
 import { PriceTransformer } from 'src/common/transformers/price.transformer';
 import { ReviewAvgTransformer } from 'src/common/transformers/review-avg.transformer';
 import { ProductImageEntity } from 'src/productImage/entities/product-image.entity';
+import { ReviewEntity } from 'src/review/entities/review.entity';
 
 @Entity({ name: 'products' })
 @Check(`"price" >= 0`)
@@ -58,6 +59,9 @@ export class ProductEntity {
     cascade: true,
   })
   images!: ProductImageEntity[];
+
+  @OneToMany(() => ReviewEntity, ({ product }) => product)
+  reviews!: ReviewEntity[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

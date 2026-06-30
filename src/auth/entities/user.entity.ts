@@ -9,6 +9,7 @@ import {
 
 import { EUserRole } from '../enums/user-role.enum';
 import { RefreshTokenEntity } from 'src/refresh-token/entities/refresh-token.entity';
+import { ReviewEntity } from 'src/review/entities/review.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -31,6 +32,9 @@ export class UserEntity {
     cascade: true,
   })
   refreshTokens!: RefreshTokenEntity[];
+
+  @OneToMany(() => ReviewEntity, ({ user }) => user, { cascade: true })
+  reviews!: ReviewEntity[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
