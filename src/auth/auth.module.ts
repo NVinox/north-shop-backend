@@ -14,6 +14,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { CartModule } from 'src/cart/cart.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
       inject: [ConfigService],
     }),
     RefreshTokenModule,
+    CartModule,
   ],
   controllers: [AuthController],
   providers: [

@@ -30,7 +30,7 @@ export class CartEntityItem {
   @Column({ type: 'integer', name: 'price_at_addition' })
   priceAtAddition!: number;
 
-  @ManyToOne(() => CartEntity, ({ ite }) => ite, {
+  @ManyToOne(() => CartEntity, ({ items }) => items, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'cart_id' })

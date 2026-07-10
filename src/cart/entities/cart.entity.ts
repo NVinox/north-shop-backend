@@ -15,6 +15,9 @@ export class CartEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
+  @Column({ name: 'user_id' })
+  userId!: number;
+
   @OneToOne(() => UserEntity, ({ cart }) => cart, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user!: UserEntity;
@@ -22,5 +25,5 @@ export class CartEntity {
   @OneToMany(() => CartEntityItem, ({ cart }) => cart, {
     cascade: true,
   })
-  ite!: CartEntityItem[];
+  items!: CartEntityItem[];
 }
