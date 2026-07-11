@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateCartTable1783614008640 implements MigrationInterface {
-    name = 'CreateCartTable1783614008640'
+export class CreateCartTable1783699177726 implements MigrationInterface {
+    name = 'CreateCartTable1783699177726'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "cart-item" ("id" SERIAL NOT NULL, "cart_id" integer NOT NULL, "product_id" integer NOT NULL, "quantity" integer NOT NULL, "price_at_addition" integer NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_029d76ff3d77656575deea04e5d" UNIQUE ("cart_id", "product_id"), CONSTRAINT "PK_0bab23e63a695e02f3b9496809b" PRIMARY KEY ("id"))`);

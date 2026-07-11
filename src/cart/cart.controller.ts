@@ -1,17 +1,26 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 
 import { CartService } from './cart.service';
-import { CartEntityItem } from 'src/cart-item/entities/cart-item.entity';
-import { CreateCartItemDTO } from 'src/cart-item/dto/create-cart-item.dto';
+import { AddProductCartDTO } from './dto/add-product-cart.dto';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { JwtRefreshGuard } from 'src/auth/guards/jwt-refresh.guard';
+import { ResponseCartItemDTO } from 'src/cart-item/dto/response-cart-item.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Controller('cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
-  @Post()
+  @Post('add')
+  @UseGuards(JwtRefreshGuard)
   async createCartItem(
-    @Body() dto: CreateCartItemDTO,
-  ): Promise<CartEntityItem> {
-    return await this.cartService.createCartItem(dto);
+    @Body() dto: AddProductCartDTO,
+    @CurrentUser('id') userId: number,
+  ): Promise<ResponseCartItemDTO> {
+    const cartItem = await this.cartService.createCartItem(dto, userId);
+
+    return plainToInstance(ResponseCartItemDTO, cartItem, {
+      excludeExtraneousValues: true,
+    });
   }
 }

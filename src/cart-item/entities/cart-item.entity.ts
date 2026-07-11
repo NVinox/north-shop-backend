@@ -11,6 +11,7 @@ import {
 
 import { CartEntity } from '../../cart/entities/cart.entity';
 import { ProductEntity } from '../../product/entities/product.entity';
+import { PriceTransformer } from 'src/common/transformers/price.transformer';
 
 @Entity({ name: 'cart-item' })
 @Unique(['cartId', 'productId'])
@@ -27,7 +28,11 @@ export class CartEntityItem {
   @Column({ type: 'integer' })
   quantity!: number;
 
-  @Column({ type: 'integer', name: 'price_at_addition' })
+  @Column({
+    type: 'integer',
+    name: 'price_at_addition',
+    transformer: new PriceTransformer(),
+  })
   priceAtAddition!: number;
 
   @ManyToOne(() => CartEntity, ({ items }) => items, {

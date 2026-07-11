@@ -6,11 +6,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CartEntity } from './entities/cart.entity';
 
 import { CartItemModule } from 'src/cart-item/cart-item.module';
+import { ProductModule } from 'src/product/product.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([CartEntity]),
     forwardRef(() => CartItemModule),
+    ProductModule,
   ],
   controllers: [CartController],
   providers: [CartService],

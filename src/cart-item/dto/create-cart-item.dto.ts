@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsInt } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsInt, IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
 
 export class CreateCartItemDTO {
   @ApiProperty({
@@ -9,7 +9,8 @@ export class CreateCartItemDTO {
     example: 1,
   })
   @IsInt()
-  @Transform(({ value }) => parseInt(value))
+  @IsPositive()
+  @IsNotEmpty()
   quantity!: number;
 
   @ApiProperty({
@@ -17,8 +18,10 @@ export class CreateCartItemDTO {
     type: 'integer',
     example: 1,
   })
-  @IsInt()
-  @Transform(({ value }) => parseInt(value))
+  @IsNumber()
+  @IsNotEmpty()
+  @Type(() => Number)
+  @IsPositive()
   priceAtAddition!: number;
 
   @ApiProperty({
@@ -27,6 +30,7 @@ export class CreateCartItemDTO {
     example: 1,
   })
   @IsInt()
+  @IsPositive()
   @Transform(({ value }) => parseInt(value))
   cartId!: number;
 
@@ -36,6 +40,7 @@ export class CreateCartItemDTO {
     example: 1,
   })
   @IsInt()
+  @IsPositive()
   @Transform(({ value }) => parseInt(value))
   productId!: number;
 }

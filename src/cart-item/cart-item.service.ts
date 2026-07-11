@@ -37,8 +37,20 @@ export class CartItemService {
       throw new NotFoundException(`Cart with ID ${cartId} not found`);
     }
 
-    const cartItem = this.cartItemRepository.create(dto);
+    const createdCartItem = this.cartItemRepository.create(dto);
+    const cartItem = await this.cartItemRepository.save(createdCartItem);
 
-    return await this.cartItemRepository.save(cartItem);
+    const cartItemWithProduct = await this.cartItemRepository.findOne({
+      where: {
+        id: cartItem.id,
+      },
+      relations: ['product'],
+    });
+
+    if (!cartItemWithProduct) {
+      throw new NotFoundException('Cart item not found after saving');
+    }
+
+    return cartItemWithProduct;
   }
 }

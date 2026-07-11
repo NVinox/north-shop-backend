@@ -73,7 +73,7 @@ export class ProductService {
     });
 
     if (!product) {
-      throw new NotFoundException();
+      throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
     return product;
