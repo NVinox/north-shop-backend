@@ -13,7 +13,7 @@ import { CartEntity } from '../../cart/entities/cart.entity';
 import { ProductEntity } from '../../product/entities/product.entity';
 import { PriceTransformer } from 'src/common/transformers/price.transformer';
 
-@Entity({ name: 'cart-item' })
+@Entity({ name: 'cart_items' })
 @Unique(['cartId', 'productId'])
 export class CartEntityItem {
   @PrimaryGeneratedColumn()

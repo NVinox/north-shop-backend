@@ -2,25 +2,31 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   ParseIntPipe,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 
 import { CartService } from './cart.service';
-import { AddProductCartDTO } from './dto/add-product-cart.dto';
+
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { JwtRefreshGuard } from 'src/auth/guards/jwt-refresh.guard';
+
+import { AddProductCartDTO } from './dto/add-product-cart.dto';
+import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
 import { ResponseCartItemDTO } from 'src/cart-item/dto/response-cart-item.dto';
-import { plainToInstance } from 'class-transformer';
+import { PaginationResponseDTO } from 'src/common/dto/pagination-response.dto';
 
 @Controller('cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post('add')
-  @UseGuards(JwtRefreshGuard)
   async createCartItem(
     @Body() dto: AddProductCartDTO,
     @CurrentUser('id') userId: number,
@@ -32,8 +38,27 @@ export class CartController {
     });
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getAllCartItemsByUserId(
+    @Query() query: PaginationQueryDTO,
+    @CurrentUser('id') userId: number,
+  ): Promise<PaginationResponseDTO<ResponseCartItemDTO>> {
+    const result = await this.cartService.getAllCartItemsByUserId(
+      query,
+      userId,
+    );
+
+    return {
+      items: plainToInstance(ResponseCartItemDTO, result.items, {
+        excludeExtraneousValues: true,
+      }),
+      meta: result.meta,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  @UseGuards(JwtRefreshGuard)
   async deleteCartItem(
     @Param('id', ParseIntPipe) cartItemId: number,
   ): Promise<Boolean> {

@@ -10,7 +10,7 @@ import {
 import { UserEntity } from '../../auth/entities/user.entity';
 import { CartEntityItem } from '../../cart-item/entities/cart-item.entity';
 
-@Entity({ name: 'cart' })
+@Entity({ name: 'carts' })
 export class CartEntity {
   @PrimaryGeneratedColumn()
   id!: number;

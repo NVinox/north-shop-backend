@@ -5,7 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { UserEntity } from './entities/user.entity';
 
-import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { JwtRefreshStrategy } from '../common/strategies/jwt-refresh.strategy';
 import { JwtAuthStrategy } from 'src/common/strategies/jwt-auth.strategy';
 
 import { getJwtConfig } from 'src/config/jwt.config';

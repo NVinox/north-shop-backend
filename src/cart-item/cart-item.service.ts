@@ -12,6 +12,8 @@ import { ProductService } from 'src/product/product.service';
 
 import { CreateCartItemDTO } from './dto/create-cart-item.dto';
 import { CartService } from 'src/cart/cart.service';
+import { PaginationResponseDTO } from 'src/common/dto/pagination-response.dto';
+import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
 
 @Injectable()
 export class CartItemService {
@@ -52,6 +54,43 @@ export class CartItemService {
     }
 
     return cartItemWithProduct;
+  }
+
+  async getAllCartItemsById(
+    query: PaginationQueryDTO,
+    cartId: number,
+  ): Promise<PaginationResponseDTO<CartEntityItem>> {
+    const queryBuilder =
+      this.cartItemRepository.createQueryBuilder('cart_items');
+    queryBuilder.leftJoinAndSelect('cart_items.cart', 'cart');
+    queryBuilder.leftJoinAndSelect('cart_items.product', 'product');
+    queryBuilder.leftJoinAndSelect(
+      'product.images',
+      'images',
+      'images.isMain = :isMain',
+      { isMain: true },
+    );
+    queryBuilder.where('cart_items.cart_id = :cartId', { cartId });
+
+    const { page, limit, sortOrder } = query;
+
+    queryBuilder
+      .orderBy('cart_items.createdAt', sortOrder)
+      .offset((page - 1) * limit)
+      .limit(limit);
+
+    const [items, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      items,
+      meta: {
+        totalItems: total,
+        itemCount: items.length,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+      },
+    };
   }
 
   async delete(id: number): Promise<Boolean> {
