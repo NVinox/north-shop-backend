@@ -53,4 +53,16 @@ export class CartItemService {
 
     return cartItemWithProduct;
   }
+
+  async delete(id: number): Promise<Boolean> {
+    const cartItem = await this.cartItemRepository.findOneBy({ id });
+
+    if (!cartItem) {
+      throw new NotFoundException(`Cart item with ID ${id} not found`);
+    }
+
+    await this.cartItemRepository.remove(cartItem);
+
+    return true;
+  }
 }

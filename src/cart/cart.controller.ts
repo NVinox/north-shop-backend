@@ -1,4 +1,12 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  ParseIntPipe,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 
 import { CartService } from './cart.service';
 import { AddProductCartDTO } from './dto/add-product-cart.dto';
@@ -22,5 +30,13 @@ export class CartController {
     return plainToInstance(ResponseCartItemDTO, cartItem, {
       excludeExtraneousValues: true,
     });
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtRefreshGuard)
+  async deleteCartItem(
+    @Param('id', ParseIntPipe) cartItemId: number,
+  ): Promise<Boolean> {
+    return await this.cartService.deleteCartItem(cartItemId);
   }
 }

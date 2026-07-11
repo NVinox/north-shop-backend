@@ -58,6 +58,10 @@ export class CartService {
     return await this.cartItemService.create(itemCartDTO);
   }
 
+  async deleteCartItem(cartItemId: number): Promise<Boolean> {
+    return await this.cartItemService.delete(cartItemId);
+  }
+
   async existCart(id: number): Promise<boolean> {
     return await this.cartRepository.existsBy({ id });
   }
