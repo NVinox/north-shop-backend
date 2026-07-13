@@ -17,8 +17,11 @@ export class ResponseProductListDTO extends ResponseProductDTO {
     }
 
     const mainImage = obj.images.find((img) => img.isMain);
+    const image = mainImage ? mainImage.url : obj.images[0].url || null;
 
-    return mainImage ? mainImage.url : obj.images[0].url || null;
+    return image
+      ? `${process.env.API_URL}/${process.env.STATIC_PATH}/${image}`
+      : null;
   })
   image!: string;
 }

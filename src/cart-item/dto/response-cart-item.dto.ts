@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
-import { ResponseProductOneDTO } from 'src/product/dto/response-product-one.dto';
+import { ResponseProductListDTO } from 'src/product/dto/response-product-list.dto';
 
 export class ResponseCartItemDTO {
   @ApiProperty({
@@ -29,9 +29,9 @@ export class ResponseCartItemDTO {
 
   @ApiProperty({
     description: 'Продукт',
-    type: [ResponseProductOneDTO],
+    type: [ResponseProductListDTO],
   })
   @Expose()
-  @Type(() => ResponseProductOneDTO)
-  product!: ResponseProductOneDTO;
+  @Type(() => ResponseProductListDTO)
+  product!: ResponseProductListDTO;
 }
