@@ -11,6 +11,16 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiExtraModels,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { CartService } from './cart.service';
 
@@ -22,13 +32,31 @@ import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
 import { ResponseCartItemDTO } from 'src/cart-item/dto/response-cart-item.dto';
 import { PaginationResponseDTO } from 'src/common/dto/pagination-response.dto';
 import { UpdateCartItemDTO } from 'src/cart-item/dto/update-cart-item.dto';
+import { ErrorResponseDTO } from 'src/common/dto/error-response.dto';
+import { PaginationMetaDTO } from 'src/common/dto/pagination-meta.dto';
 
+import { ApiPaginatedResponse } from 'src/common/decorators/api-paginated-response.decorator';
+
+@ApiTags('Корзина')
 @Controller('cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
+  @ApiOperation({
+    summary: 'Создание позиции',
+    description: 'Метод создания позиции товара в корзину',
+  })
+  @ApiCreatedResponse({
+    description: 'Позиция создана',
+    type: ResponseCartItemDTO,
+  })
+  @ApiBadRequestResponse({
+    description: 'Ошибка неправильного запроса',
+    type: ErrorResponseDTO,
+  })
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard)
-  @Post('add')
+  @Post()
   async createCartItem(
     @Body() dto: AddProductCartDTO,
     @CurrentUser('id') userId: number,
@@ -40,6 +68,13 @@ export class CartController {
     });
   }
 
+  @ApiOperation({
+    summary: 'Получения товаров',
+    description: 'Метод получения товаров из корзины',
+  })
+  @ApiExtraModels(PaginationResponseDTO, ResponseCartItemDTO, PaginationMetaDTO)
+  @ApiPaginatedResponse(ResponseCartItemDTO)
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard)
   @Get()
   async getAllCartItemsByUserId(
@@ -59,8 +94,25 @@ export class CartController {
     };
   }
 
-  @Patch(':id')
+  @ApiOperation({
+    summary: 'Обновление позиции товара',
+    description: 'Метод обновления позиции товара в корзине',
+  })
+  @ApiOkResponse({
+    description: 'Позиция обновлена',
+    type: ResponseCartItemDTO,
+  })
+  @ApiBadRequestResponse({
+    description: 'Ошибка неправильного запроса',
+    type: ErrorResponseDTO,
+  })
+  @ApiNotFoundResponse({
+    description: 'Позиция не найдена',
+    type: ErrorResponseDTO,
+  })
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard)
+  @Patch(':id')
   async updateCartItem(
     @Param('id', ParseIntPipe) cartItemId: number,
     @Body() dto: UpdateCartItemDTO,
@@ -72,6 +124,20 @@ export class CartController {
     });
   }
 
+  @ApiOperation({
+    summary: 'Удаление позиции товара',
+    description: 'Метод удаления позиции товара из корзины',
+  })
+  @ApiOkResponse({ description: 'Позиция удалена', type: Boolean })
+  @ApiBadRequestResponse({
+    description: 'Ошибка неправильного запроса',
+    type: ErrorResponseDTO,
+  })
+  @ApiNotFoundResponse({
+    description: 'Позиция не найдена',
+    type: ErrorResponseDTO,
+  })
+  @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deleteCartItem(

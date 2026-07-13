@@ -7,6 +7,7 @@ export class CreateCartItemDTO {
     description: 'Количество товара',
     type: 'integer',
     example: 1,
+    required: true,
   })
   @IsInt()
   @IsPositive()
@@ -17,6 +18,7 @@ export class CreateCartItemDTO {
     description: 'Цена при добавлении в корзину одного товара',
     type: 'integer',
     example: 1,
+    required: true,
   })
   @IsNumber()
   @IsNotEmpty()
@@ -28,6 +30,7 @@ export class CreateCartItemDTO {
     description: 'ID Корзины',
     type: 'integer',
     example: 1,
+    required: true,
   })
   @IsInt()
   @IsPositive()
@@ -38,6 +41,7 @@ export class CreateCartItemDTO {
     description: 'ID Продукта',
     type: 'integer',
     example: 1,
+    required: true,
   })
   @IsInt()
   @IsPositive()

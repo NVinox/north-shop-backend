@@ -7,6 +7,7 @@ export class AddProductCartDTO {
     description: 'Количество товара',
     type: 'integer',
     example: 1,
+    required: true,
   })
   @IsInt()
   @IsPositive()
@@ -17,6 +18,7 @@ export class AddProductCartDTO {
     description: 'ID Продукта',
     type: 'integer',
     example: 1,
+    required: true,
   })
   @IsInt()
   @IsPositive()
