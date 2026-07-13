@@ -22,6 +22,7 @@ import { IJwtPayload } from './interfaces/jwt.interface';
 import { RefreshTokenService } from 'src/refresh-token/refresh-token.service';
 import { LoginRequestDTO } from './dto/login-request.dto';
 import { isDev } from 'src/utils/is-dev.util';
+import { CartService } from 'src/cart/cart.service';
 
 @Injectable()
 export class AuthService {
@@ -41,6 +42,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly refreshTokenService: RefreshTokenService,
+    private readonly cartService: CartService,
     private readonly dataSource: DataSource,
   ) {
     this.SALT_ROUNDS =
@@ -90,6 +92,8 @@ export class AuthService {
         },
         manager,
       );
+
+      await this.cartService.createCart(createdUser.id, manager);
 
       return { accessToken };
     });
@@ -204,7 +208,7 @@ export class AuthService {
       domain: this.COOKIE_DOMAIN,
       secure: !isDev(this.configService),
       sameSite: isDev(this.configService) ? 'none' : 'lax',
-      path: '/api/auth',
+      path: '/',
       expires,
     });
   }
@@ -213,7 +217,7 @@ export class AuthService {
     res.clearCookie('refreshToken', {
       httpOnly: true,
       domain: this.COOKIE_DOMAIN,
-      path: '/api/auth',
+      path: '/',
     });
   }
 
