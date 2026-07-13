@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -20,6 +21,7 @@ import { AddProductCartDTO } from './dto/add-product-cart.dto';
 import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
 import { ResponseCartItemDTO } from 'src/cart-item/dto/response-cart-item.dto';
 import { PaginationResponseDTO } from 'src/common/dto/pagination-response.dto';
+import { UpdateCartItemDTO } from 'src/cart-item/dto/update-cart-item.dto';
 
 @Controller('cart')
 export class CartController {
@@ -55,6 +57,19 @@ export class CartController {
       }),
       meta: result.meta,
     };
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  async updateCartItem(
+    @Param('id', ParseIntPipe) cartItemId: number,
+    @Body() dto: UpdateCartItemDTO,
+  ): Promise<ResponseCartItemDTO> {
+    const cartItem = await this.cartService.updateCartItem(cartItemId, dto);
+
+    return plainToInstance(ResponseCartItemDTO, cartItem, {
+      excludeExtraneousValues: true,
+    });
   }
 
   @UseGuards(JwtAuthGuard)

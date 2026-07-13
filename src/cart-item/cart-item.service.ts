@@ -14,6 +14,7 @@ import { CreateCartItemDTO } from './dto/create-cart-item.dto';
 import { CartService } from 'src/cart/cart.service';
 import { PaginationResponseDTO } from 'src/common/dto/pagination-response.dto';
 import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
+import { UpdateCartItemDTO } from './dto/update-cart-item.dto';
 
 @Injectable()
 export class CartItemService {
@@ -91,6 +92,30 @@ export class CartItemService {
         currentPage: page,
       },
     };
+  }
+
+  async update(id: number, dto: UpdateCartItemDTO): Promise<CartEntityItem> {
+    const cartItem = await this.cartItemRepository.findOneBy({ id });
+
+    if (!cartItem) {
+      throw new NotFoundException(`Cart item with ID ${id} not found`);
+    }
+
+    Object.assign(cartItem, dto);
+    await this.cartItemRepository.save(cartItem);
+
+    const cartItemWithProduct = await this.cartItemRepository.findOne({
+      where: {
+        id: cartItem.id,
+      },
+      relations: ['product'],
+    });
+
+    if (!cartItemWithProduct) {
+      throw new NotFoundException('Cart item not found after saving');
+    }
+
+    return cartItemWithProduct;
   }
 
   async delete(id: number): Promise<Boolean> {

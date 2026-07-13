@@ -17,6 +17,7 @@ import { ProductService } from 'src/product/product.service';
 import { PaginationQueryDTO } from 'src/common/dto/pagination-query.dto';
 import { PaginationResponseDTO } from 'src/common/dto/pagination-response.dto';
 import { ResponseCartItemDTO } from 'src/cart-item/dto/response-cart-item.dto';
+import { UpdateCartItemDTO } from 'src/cart-item/dto/update-cart-item.dto';
 
 @Injectable()
 export class CartService {
@@ -72,6 +73,13 @@ export class CartService {
     }
 
     return await this.cartItemService.getAllCartItemsById(query, cart.id);
+  }
+
+  async updateCartItem(
+    cartItemId: number,
+    dto: UpdateCartItemDTO,
+  ): Promise<CartEntityItem> {
+    return await this.cartItemService.update(cartItemId, dto);
   }
 
   async deleteCartItem(cartItemId: number): Promise<Boolean> {
