@@ -45,5 +45,7 @@ export class ProductImageController {
   }
 
   @Delete(':id')
-  async delete(@Param('id', ParseIntPipe) id: number) {}
+  async delete(@Param('id', ParseIntPipe) id: number): Promise<Boolean> {
+    return await this.productImageService.delete(id);
+  }
 }

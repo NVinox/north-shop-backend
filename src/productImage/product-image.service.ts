@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import {
   forwardRef,
   Inject,
@@ -26,6 +26,7 @@ export class ProductImageService {
     private readonly productImageRepository: Repository<ProductImageEntity>,
     @Inject(forwardRef(() => ProductService))
     private readonly productService: ProductService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async getAllImagesByProduct(
@@ -105,6 +106,39 @@ export class ProductImageService {
     const image = await this.productImageRepository.save(imageMemory);
 
     return await this.getOne(image.id);
+  }
+
+  async delete(id: number): Promise<Boolean> {
+    return await this.dataSource.transaction(async (manager) => {
+      const productImage = await manager.findOne(ProductImageEntity, {
+        where: { id },
+      });
+
+      if (!productImage) {
+        throw new NotFoundException(`image with id ${id} not found`);
+      }
+
+      await manager.remove(productImage);
+
+      if (productImage.isMain) {
+        const remainingImages = await manager.find(ProductImageEntity, {
+          where: { productId: productImage.productId },
+          order: { id: 'ASC' },
+        });
+
+        if (remainingImages.length) {
+          const nextImage = remainingImages[0];
+
+          nextImage.isMain = true;
+
+          await manager.save(nextImage);
+        }
+      }
+
+      await this.removeImage(productImage.url);
+
+      return true;
+    });
   }
 
   async removeImage(url: string) {
