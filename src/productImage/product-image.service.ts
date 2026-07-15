@@ -1,5 +1,10 @@
 import { Repository } from 'typeorm';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -8,12 +13,17 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { ProductImageEntity } from './entities/product-image.entity';
 import { CreateProductImageDTO } from './dto/create-product-image.dto';
+import { CreateImageByProductDTO } from './dto/create-image-by-product.dto';
+
+import { ProductService } from 'src/product/product.service';
 
 @Injectable()
 export class ProductImageService {
   constructor(
     @InjectRepository(ProductImageEntity)
     private readonly productImageRepository: Repository<ProductImageEntity>,
+    @Inject(forwardRef(() => ProductService))
+    private readonly productService: ProductService,
   ) {}
 
   async getOne(id: number): Promise<ProductImageEntity> {
@@ -28,6 +38,38 @@ export class ProductImageService {
 
   async create(
     dto: CreateProductImageDTO,
+    file: Express.Multer.File,
+  ): Promise<ProductImageEntity> {
+    const product = await this.productService.existProduct(dto.productId);
+
+    if (!product) {
+      throw new NotFoundException(`product with id ${dto.productId} not found`);
+    }
+
+    const fileUrl = this.upload(file);
+
+    if (dto.isMain) {
+      const mainProductImage = await this.productImageRepository.findOne({
+        where: { productId: dto.productId, isMain: true },
+      });
+
+      if (mainProductImage) {
+        mainProductImage.isMain = false;
+        await this.productImageRepository.save(mainProductImage);
+      }
+    }
+
+    const imageMemory = this.productImageRepository.create({
+      ...dto,
+      url: fileUrl,
+    });
+    const image = await this.productImageRepository.save(imageMemory);
+
+    return await this.getOne(image.id);
+  }
+
+  async createImageByProduct(
+    dto: CreateImageByProductDTO,
     file: Express.Multer.File,
   ): Promise<ProductImageEntity> {
     const fileUrl = this.upload(file);

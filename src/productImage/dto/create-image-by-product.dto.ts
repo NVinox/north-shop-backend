@@ -1,15 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsInt, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { IsBoolean, IsInt, IsOptional } from 'class-validator';
 
-export class CreateProductImageDTO {
+export class CreateImageByProductDTO {
   @ApiProperty({
     description: 'Файл изображения',
     type: 'string',
     format: 'binary',
   })
-  @IsOptional()
-  image!: any;
+  image?: any;
 
   @ApiPropertyOptional({
     description: 'Флаг главной картинки',
@@ -18,7 +17,6 @@ export class CreateProductImageDTO {
   })
   @IsBoolean()
   @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
   isMain?: boolean;
 
   @ApiProperty({
