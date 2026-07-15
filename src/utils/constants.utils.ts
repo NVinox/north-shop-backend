@@ -1,0 +1,1 @@
+export const MAX_PRODUCT_IMAGES_LENGTH = 5;

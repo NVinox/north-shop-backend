@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  PayloadTooLargeException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as path from 'path';
@@ -16,6 +17,7 @@ import { CreateProductImageDTO } from './dto/create-product-image.dto';
 import { CreateImageByProductDTO } from './dto/create-image-by-product.dto';
 
 import { ProductService } from 'src/product/product.service';
+import { MAX_PRODUCT_IMAGES_LENGTH } from 'src/utils/constants.utils';
 
 @Injectable()
 export class ProductImageService {
@@ -25,6 +27,18 @@ export class ProductImageService {
     @Inject(forwardRef(() => ProductService))
     private readonly productService: ProductService,
   ) {}
+
+  async getAllImagesByProduct(
+    productId: number,
+  ): Promise<ProductImageEntity[]> {
+    const product = await this.productService.getOne(productId);
+
+    if (!product) {
+      throw new NotFoundException(`product with id ${productId} not found`);
+    }
+
+    return product.images;
+  }
 
   async getOne(id: number): Promise<ProductImageEntity> {
     const image = await this.productImageRepository.findOneBy({ id });
@@ -46,19 +60,30 @@ export class ProductImageService {
       throw new NotFoundException(`product with id ${dto.productId} not found`);
     }
 
-    const fileUrl = this.upload(file);
+    const productImages = await this.getAllImagesByProduct(dto.productId);
 
-    if (dto.isMain) {
-      const mainProductImage = await this.productImageRepository.findOne({
-        where: { productId: dto.productId, isMain: true },
-      });
-
-      if (mainProductImage) {
-        mainProductImage.isMain = false;
-        await this.productImageRepository.save(mainProductImage);
+    if (productImages.length) {
+      if (productImages.length === MAX_PRODUCT_IMAGES_LENGTH) {
+        throw new PayloadTooLargeException(
+          `The image limit has been exceeded: you cannot upload more than ${MAX_PRODUCT_IMAGES_LENGTH} images for a single product`,
+        );
       }
+
+      if (dto.isMain) {
+        const mainProductImage = await this.productImageRepository.findOne({
+          where: { productId: dto.productId, isMain: true },
+        });
+
+        if (mainProductImage) {
+          mainProductImage.isMain = false;
+          await this.productImageRepository.save(mainProductImage);
+        }
+      }
+    } else {
+      dto.isMain = true;
     }
 
+    const fileUrl = this.upload(file);
     const imageMemory = this.productImageRepository.create({
       ...dto,
       url: fileUrl,
