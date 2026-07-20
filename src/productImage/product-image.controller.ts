@@ -7,6 +7,7 @@ import {
   Param,
   ParseFilePipe,
   ParseIntPipe,
+  Patch,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -15,7 +16,9 @@ import { plainToInstance } from 'class-transformer';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 import { CreateProductImageDTO } from './dto/create-product-image.dto';
+import { UpdateProductImageDTO } from './dto/update-product-image.dto';
 import { ResponseProductImageDTO } from './dto/response-product-image.dto';
+
 import { ProductImageService } from './product-image.service';
 
 @Controller('product-image')
@@ -38,6 +41,18 @@ export class ProductImageController {
     file: Express.Multer.File,
   ): Promise<ResponseProductImageDTO> {
     const image = await this.productImageService.create(dto, file);
+
+    return plainToInstance(ResponseProductImageDTO, image, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  @Patch(':id')
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateProductImageDTO,
+  ): Promise<ResponseProductImageDTO> {
+    const image = await this.productImageService.update(id, dto);
 
     return plainToInstance(ResponseProductImageDTO, image, {
       excludeExtraneousValues: true,

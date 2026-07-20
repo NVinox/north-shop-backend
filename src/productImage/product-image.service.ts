@@ -13,6 +13,7 @@ import * as fsPromises from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 
 import { ProductImageEntity } from './entities/product-image.entity';
+import { UpdateProductImageDTO } from './dto/update-product-image.dto';
 import { CreateProductImageDTO } from './dto/create-product-image.dto';
 import { CreateImageByProductDTO } from './dto/create-image-by-product.dto';
 
@@ -108,6 +109,55 @@ export class ProductImageService {
     return await this.getOne(image.id);
   }
 
+  async update(
+    id: number,
+    dto: UpdateProductImageDTO,
+  ): Promise<ProductImageEntity> {
+    return await this.dataSource.transaction(async (manager) => {
+      const productImage = await manager.findOne(ProductImageEntity, {
+        where: { id },
+      });
+
+      if (!productImage) {
+        throw new NotFoundException(`image with id ${id} not found`);
+      }
+
+      if (dto.isMain) {
+        const mainProductImage = await manager.findOne(ProductImageEntity, {
+          where: {
+            isMain: true,
+          },
+        });
+
+        if (mainProductImage) {
+          mainProductImage.isMain = false;
+          await manager.save(mainProductImage);
+        }
+
+        productImage.isMain = true;
+        await manager.save(productImage);
+      } else {
+        if (productImage.isMain) {
+          const productImages = await manager.find(ProductImageEntity, {
+            where: {
+              productId: productImage.productId,
+            },
+            order: { id: 'DESC' },
+          });
+          const firstProductImage = productImages[0];
+
+          firstProductImage.isMain = true;
+          productImage.isMain = false;
+
+          await manager.save(productImage);
+          await manager.save(firstProductImage);
+        }
+      }
+
+      return productImage;
+    });
+  }
+
   async delete(id: number): Promise<Boolean> {
     return await this.dataSource.transaction(async (manager) => {
       const productImage = await manager.findOne(ProductImageEntity, {
@@ -123,7 +173,7 @@ export class ProductImageService {
       if (productImage.isMain) {
         const remainingImages = await manager.find(ProductImageEntity, {
           where: { productId: productImage.productId },
-          order: { id: 'ASC' },
+          order: { id: 'DESC' },
         });
 
         if (remainingImages.length) {
