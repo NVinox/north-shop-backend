@@ -10,6 +10,7 @@ import {
   Patch,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
@@ -21,11 +22,19 @@ import { ResponseProductImageDTO } from './dto/response-product-image.dto';
 
 import { ProductImageService } from './product-image.service';
 
+import { Roles } from 'src/common/decorators/roles-decorator';
+
+import { EUserRole } from 'src/common/enums/user-role.enum';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+
 @Controller('product-image')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductImageController {
   constructor(private readonly productImageService: ProductImageService) {}
 
   @UseInterceptors(FileInterceptor('image'))
+  @Roles(EUserRole.MANAGER, EUserRole.ADMIN)
   @Post()
   async create(
     @Body() dto: CreateProductImageDTO,
@@ -47,6 +56,7 @@ export class ProductImageController {
     });
   }
 
+  @Roles(EUserRole.MANAGER, EUserRole.ADMIN)
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -59,6 +69,7 @@ export class ProductImageController {
     });
   }
 
+  @Roles(EUserRole.MANAGER, EUserRole.ADMIN)
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number): Promise<Boolean> {
     return await this.productImageService.delete(id);

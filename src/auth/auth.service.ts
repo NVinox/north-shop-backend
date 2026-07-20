@@ -12,7 +12,7 @@ import { DataSource, Repository } from 'typeorm';
 import ms, { StringValue } from 'ms';
 import * as bcrypt from 'bcrypt';
 
-import { EUserRole } from './enums/user-role.enum';
+import { EUserRole } from '../common/enums/user-role.enum';
 
 import { UserEntity } from './entities/user.entity';
 import { JWTTokensResponseDTO } from './dto/jwt-tokens-response.dto';

@@ -12,7 +12,7 @@ import { RefreshTokenEntity } from 'src/refresh-token/entities/refresh-token.ent
 import { ReviewEntity } from 'src/review/entities/review.entity';
 import { CartEntity } from 'src/cart/entities/cart.entity';
 
-import { EUserRole } from '../enums/user-role.enum';
+import { EUserRole } from '../../common/enums/user-role.enum';
 
 @Entity({ name: 'users' })
 export class UserEntity {
