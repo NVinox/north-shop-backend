@@ -12,7 +12,7 @@ import { DataSource, Repository } from 'typeorm';
 import ms, { StringValue } from 'ms';
 import * as bcrypt from 'bcrypt';
 
-import { EUserRole } from './enums/user-role.enum';
+import { EUserRole } from '../common/enums/user-role.enum';
 
 import { UserEntity } from './entities/user.entity';
 import { JWTTokensResponseDTO } from './dto/jwt-tokens-response.dto';
@@ -22,6 +22,7 @@ import { IJwtPayload } from './interfaces/jwt.interface';
 import { RefreshTokenService } from 'src/refresh-token/refresh-token.service';
 import { LoginRequestDTO } from './dto/login-request.dto';
 import { isDev } from 'src/utils/is-dev.util';
+import { CartService } from 'src/cart/cart.service';
 
 @Injectable()
 export class AuthService {
@@ -41,6 +42,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly refreshTokenService: RefreshTokenService,
+    private readonly cartService: CartService,
     private readonly dataSource: DataSource,
   ) {
     this.SALT_ROUNDS =
@@ -90,6 +92,8 @@ export class AuthService {
         },
         manager,
       );
+
+      await this.cartService.createCart(createdUser.id, manager);
 
       return { accessToken };
     });
@@ -180,6 +184,20 @@ export class AuthService {
     return { accessToken };
   }
 
+  async existUser(id: number): Promise<boolean> {
+    return await this.userRepository.existsBy({ id });
+  }
+
+  async getUser(id: number): Promise<UserEntity> {
+    const user = await this.userRepository.findOneBy({ id });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
   private calculateRefreshExpires(isCalculate: boolean = true): Date {
     if (isCalculate) {
       return new Date(
@@ -200,7 +218,7 @@ export class AuthService {
       domain: this.COOKIE_DOMAIN,
       secure: !isDev(this.configService),
       sameSite: isDev(this.configService) ? 'none' : 'lax',
-      path: '/api/auth',
+      path: '/',
       expires,
     });
   }
@@ -209,7 +227,7 @@ export class AuthService {
     res.clearCookie('refreshToken', {
       httpOnly: true,
       domain: this.COOKIE_DOMAIN,
-      path: '/api/auth',
+      path: '/',
     });
   }
 

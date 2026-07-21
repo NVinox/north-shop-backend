@@ -1,5 +1,7 @@
 import {
   ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,13 +15,14 @@ import { QueryProductDTO } from './dto/query-product.dto';
 import { PaginationResponseDTO } from 'src/common/dto/pagination-response.dto';
 
 import { ProductImageService } from 'src/productImage/product-image.service';
-import { CreateProductImageDTO } from 'src/productImage/dto/create-product-image.dto';
+import { CreateImageByProductDTO } from 'src/productImage/dto/create-image-by-product.dto';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(ProductEntity)
     private readonly productRepository: Repository<ProductEntity>,
+    @Inject(forwardRef(() => ProductImageService))
     private readonly productImageService: ProductImageService,
   ) {}
 
@@ -73,7 +76,7 @@ export class ProductService {
     });
 
     if (!product) {
-      throw new NotFoundException();
+      throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
     return product;
@@ -86,6 +89,9 @@ export class ProductService {
     await this.existSku(dto.sku);
 
     const product = this.productRepository.create(dto);
+
+    this.calculatePrice(product);
+
     const createdProduct = await this.productRepository.save(product);
 
     await this.createProductImage(createdProduct.id, files);
@@ -106,6 +112,20 @@ export class ProductService {
     return await this.productRepository.save(product);
   }
 
+  async updateReviewStats(productId: number): Promise<void> {
+    const stats = await this.productRepository.manager
+      .createQueryBuilder('reviews', 'r')
+      .select('COUNT(r.id)', 'count')
+      .addSelect('AVG(r.rating)', 'avg')
+      .where('r.product_id = :productId', { productId })
+      .getRawOne();
+
+    await this.productRepository.update(productId, {
+      reviewCount: parseInt(stats.count) || 0,
+      ratingAvg: stats.avg ? parseFloat(parseFloat(stats.avg).toFixed(1)) : 0,
+    });
+  }
+
   async delete(id: number): Promise<boolean> {
     const product = await this.getOne(id);
 
@@ -116,6 +136,10 @@ export class ProductService {
     await this.productRepository.remove(product);
 
     return true;
+  }
+
+  async existProduct(id: number): Promise<boolean> {
+    return await this.productRepository.existsBy({ id });
   }
 
   private async existSku(sku: string, productId?: number): Promise<void> {
@@ -148,7 +172,7 @@ export class ProductService {
   ) {
     if (files && files.length) {
       for (const [index, file] of files.entries()) {
-        const imageDTO: CreateProductImageDTO = {
+        const imageDTO: CreateImageByProductDTO = {
           productId,
         };
 
@@ -156,7 +180,7 @@ export class ProductService {
           imageDTO.isMain = true;
         }
 
-        await this.productImageService.create(imageDTO, file);
+        await this.productImageService.createImageByProduct(imageDTO, file);
       }
     }
   }

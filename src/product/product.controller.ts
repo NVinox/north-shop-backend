@@ -12,14 +12,17 @@ import {
   Post,
   Query,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiConsumes,
   ApiCreatedResponse,
   ApiExtraModels,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -31,6 +34,7 @@ import { plainToInstance } from 'class-transformer';
 import { ProductService } from './product.service';
 
 import { ApiPaginatedResponse } from 'src/common/decorators/api-paginated-response.decorator';
+import { Roles } from 'src/common/decorators/roles-decorator';
 
 import { CreateProductDTO } from './dto/create-product.dto';
 import { UpdateProductDTO } from './dto/update-product.dto';
@@ -40,6 +44,11 @@ import { PaginationMetaDTO } from 'src/common/dto/pagination-meta.dto';
 import { ErrorResponseDTO } from 'src/common/dto/error-response.dto';
 import { ResponseProductListDTO } from './dto/response-product-list.dto';
 import { ResponseProductOneDTO } from './dto/response-product-one.dto';
+
+import { EUserRole } from 'src/common/enums/user-role.enum';
+
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @ApiTags('Продукты')
 @Controller('products')
@@ -111,7 +120,14 @@ export class ProductController {
     description: 'Конфликт создания продукта',
     type: ErrorResponseDTO,
   })
+  @ApiForbiddenResponse({
+    description: 'Недостаточно прав',
+    type: ErrorResponseDTO,
+  })
   @ApiConsumes('multipart/form-data')
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(EUserRole.ADMIN, EUserRole.MANAGER)
   @Post()
   @UseInterceptors(FilesInterceptor('images'))
   async create(
@@ -154,6 +170,12 @@ export class ProductController {
     description: 'Конфликт создания продукта',
     type: ErrorResponseDTO,
   })
+  @ApiForbiddenResponse({
+    description: 'Недостаточно прав',
+    type: ErrorResponseDTO,
+  })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(EUserRole.ADMIN, EUserRole.MANAGER)
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -179,6 +201,12 @@ export class ProductController {
     description: 'Продукт не найден',
     type: ErrorResponseDTO,
   })
+  @ApiForbiddenResponse({
+    description: 'Недостаточно прав',
+    type: ErrorResponseDTO,
+  })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(EUserRole.ADMIN, EUserRole.MANAGER)
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number): Promise<boolean> {
     return await this.productService.delete(id);
