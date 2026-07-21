@@ -7,10 +7,13 @@ import {
   ParseIntPipe,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiExtraModels,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -30,6 +33,11 @@ import { PaginationMetaDTO } from 'src/common/dto/pagination-meta.dto';
 
 import { ApiPaginatedResponse } from 'src/common/decorators/api-paginated-response.decorator';
 import { ErrorResponseDTO } from 'src/common/dto/error-response.dto';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles-decorator';
+import { EUserRole } from 'src/common/enums/user-role.enum';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @ApiTags('Отзывы')
 @Controller('reviews')
@@ -71,9 +79,14 @@ export class ReviewController {
     description: 'Ошибка неправильного запроса',
     type: ErrorResponseDTO,
   })
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Body() dto: CreateReviewDTO): Promise<ResponseReviewDTO> {
-    const review = await this.reviewService.create(dto);
+  async create(
+    @Body() dto: CreateReviewDTO,
+    @CurrentUser('id') userId: number,
+  ): Promise<ResponseReviewDTO> {
+    const review = await this.reviewService.create(dto, userId);
 
     return plainToInstance(ResponseReviewDTO, review, {
       excludeExtraneousValues: true,
@@ -90,10 +103,17 @@ export class ReviewController {
     description: 'Ошибка неправильного запроса',
     type: ErrorResponseDTO,
   })
+  @ApiForbiddenResponse({
+    description: 'Недостаточно прав',
+    type: ErrorResponseDTO,
+  })
   @ApiNotFoundResponse({
     description: 'Отзыв не найден',
     type: ErrorResponseDTO,
   })
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(EUserRole.MANAGER, EUserRole.ADMIN)
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number): Promise<boolean> {
     return await this.reviewService.delete(id);

@@ -188,6 +188,16 @@ export class AuthService {
     return await this.userRepository.existsBy({ id });
   }
 
+  async getUser(id: number): Promise<UserEntity> {
+    const user = await this.userRepository.findOneBy({ id });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
   private calculateRefreshExpires(isCalculate: boolean = true): Date {
     if (isCalculate) {
       return new Date(
