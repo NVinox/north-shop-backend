@@ -55,14 +55,14 @@ export class ReviewService {
     };
   }
 
-  async create(dto: CreateReviewDTO): Promise<ReviewEntity> {
+  async create(dto: CreateReviewDTO, userId: number): Promise<ReviewEntity> {
     const product = await this.productService.existProduct(dto.productId);
 
     if (!product) {
       throw new NotFoundException(`Product with ID ${dto.productId} not found`);
     }
 
-    const user = await this.userService.existUser(dto.userId);
+    const user = await this.userService.getUser(userId);
 
     if (!user) {
       throw new NotFoundException(`User with ID ${dto.productId} not found`);
@@ -70,7 +70,7 @@ export class ReviewService {
 
     const alreadyReviewed = await this.reviewRepository.existsBy({
       product: { id: dto.productId },
-      user: { id: dto.userId },
+      user: { id: userId },
     });
 
     if (alreadyReviewed) {
@@ -79,7 +79,7 @@ export class ReviewService {
       );
     }
 
-    const review = this.reviewRepository.create(dto);
+    const review = this.reviewRepository.create({ user, ...dto });
     const createdReview = await this.reviewRepository.save(review);
 
     await this.productService.updateReviewStats(dto.productId);

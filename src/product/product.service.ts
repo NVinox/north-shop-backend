@@ -1,5 +1,7 @@
 import {
   ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,13 +15,14 @@ import { QueryProductDTO } from './dto/query-product.dto';
 import { PaginationResponseDTO } from 'src/common/dto/pagination-response.dto';
 
 import { ProductImageService } from 'src/productImage/product-image.service';
-import { CreateProductImageDTO } from 'src/productImage/dto/create-product-image.dto';
+import { CreateImageByProductDTO } from 'src/productImage/dto/create-image-by-product.dto';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(ProductEntity)
     private readonly productRepository: Repository<ProductEntity>,
+    @Inject(forwardRef(() => ProductImageService))
     private readonly productImageService: ProductImageService,
   ) {}
 
@@ -169,7 +172,7 @@ export class ProductService {
   ) {
     if (files && files.length) {
       for (const [index, file] of files.entries()) {
-        const imageDTO: CreateProductImageDTO = {
+        const imageDTO: CreateImageByProductDTO = {
           productId,
         };
 
@@ -177,7 +180,7 @@ export class ProductService {
           imageDTO.isMain = true;
         }
 
-        await this.productImageService.create(imageDTO, file);
+        await this.productImageService.createImageByProduct(imageDTO, file);
       }
     }
   }

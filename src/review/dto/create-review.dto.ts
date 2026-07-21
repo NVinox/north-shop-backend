@@ -25,15 +25,6 @@ export class CreateReviewDTO {
   rating!: number;
 
   @ApiProperty({
-    description: 'ID Пользователя',
-    type: 'integer',
-    example: 1,
-  })
-  @IsInt()
-  @Transform(({ value }) => parseInt(value))
-  userId!: number;
-
-  @ApiProperty({
     description: 'ID Продукта',
     type: 'integer',
     example: 1,

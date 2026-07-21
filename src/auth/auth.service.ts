@@ -12,7 +12,7 @@ import { DataSource, Repository } from 'typeorm';
 import ms, { StringValue } from 'ms';
 import * as bcrypt from 'bcrypt';
 
-import { EUserRole } from './enums/user-role.enum';
+import { EUserRole } from '../common/enums/user-role.enum';
 
 import { UserEntity } from './entities/user.entity';
 import { JWTTokensResponseDTO } from './dto/jwt-tokens-response.dto';
@@ -186,6 +186,16 @@ export class AuthService {
 
   async existUser(id: number): Promise<boolean> {
     return await this.userRepository.existsBy({ id });
+  }
+
+  async getUser(id: number): Promise<UserEntity> {
+    const user = await this.userRepository.findOneBy({ id });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
   }
 
   private calculateRefreshExpires(isCalculate: boolean = true): Date {
