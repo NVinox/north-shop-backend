@@ -9,7 +9,6 @@ import {
   IsString,
   Length,
   Max,
-  MaxLength,
   Min,
 } from 'class-validator';
 
@@ -34,16 +33,6 @@ export class CreatePatchProductDTO {
   @Type(() => Number)
   @IsPositive()
   price!: number;
-
-  @ApiProperty({
-    description: 'Артикул (уникальное значение)',
-    type: 'string',
-    example: '000001',
-  })
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(255)
-  sku!: string;
 
   @ApiPropertyOptional({
     description: 'Скидка на продукт',

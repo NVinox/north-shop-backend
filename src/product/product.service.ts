@@ -1,5 +1,4 @@
 import {
-  ConflictException,
   forwardRef,
   Inject,
   Injectable,
@@ -7,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import slugify from 'slugify';
 
 import { ProductEntity } from './entities/product.entity';
 import { CreateProductDTO } from './dto/create-product.dto';
@@ -86,9 +86,13 @@ export class ProductService {
     dto: CreateProductDTO,
     files: Express.Multer.File[],
   ): Promise<ProductEntity> {
-    await this.existSku(dto.sku);
+    const { slug, sku } = await this.generateProductMetadata(dto.title);
 
-    const product = this.productRepository.create(dto);
+    const product = this.productRepository.create({
+      ...dto,
+      sku,
+      slug,
+    });
 
     this.calculatePrice(product);
 
@@ -100,13 +104,16 @@ export class ProductService {
   }
 
   async update(id: number, dto: UpdateProductDTO): Promise<ProductEntity> {
-    if (dto.sku) {
-      await this.existSku(dto.sku, id);
-    }
-
     const product = await this.getOne(id);
 
-    Object.assign(product, dto);
+    if (dto.title) {
+      const { slug } = await this.generateProductMetadata(dto.title);
+
+      Object.assign(product, { ...dto, slug });
+    } else {
+      Object.assign(product, dto);
+    }
+
     this.calculatePrice(product);
 
     return await this.productRepository.save(product);
@@ -142,18 +149,30 @@ export class ProductService {
     return await this.productRepository.existsBy({ id });
   }
 
-  private async existSku(sku: string, productId?: number): Promise<void> {
-    const product = await this.productRepository.findOneBy({ sku });
+  private async generateProductMetadata(
+    title: string,
+  ): Promise<{ sku: string; slug: string }> {
+    let nextSkuNumber = 1;
+    const lastProduct = await this.productRepository.findOne({
+      where: {},
+      order: { id: 'DESC' },
+    });
 
-    if (productId) {
-      if (product && product.id !== productId) {
-        throw new ConflictException('sku is already taken');
-      }
-    } else {
-      if (product) {
-        throw new ConflictException('sku is already taken');
-      }
+    if (lastProduct && lastProduct.sku) {
+      nextSkuNumber = parseInt(lastProduct.sku, 10) + 1;
     }
+
+    const generatedSku = String(nextSkuNumber).padStart(6, '0');
+    const translatedTitle = slugify(title, {
+      lower: true,
+      strict: true,
+      locale: 'ru',
+    });
+
+    return {
+      sku: generatedSku,
+      slug: `${translatedTitle}-${generatedSku}`,
+    };
   }
 
   private calculatePrice(product: ProductEntity): void {
