@@ -69,7 +69,20 @@ export class ProductService {
     };
   }
 
-  async getOne(id: number): Promise<ProductEntity> {
+  async getOneBySlug(slug: string): Promise<ProductEntity> {
+    const product = await this.productRepository.findOne({
+      where: { slug },
+      relations: ['images'],
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product with slug ${slug} not found`);
+    }
+
+    return product;
+  }
+
+  async getOneById(id: number): Promise<ProductEntity> {
     const product = await this.productRepository.findOne({
       where: { id },
       relations: ['images'],
@@ -100,11 +113,11 @@ export class ProductService {
 
     await this.createProductImage(createdProduct.id, files);
 
-    return await this.getOne(createdProduct.id);
+    return await this.getOneById(createdProduct.id);
   }
 
   async update(id: number, dto: UpdateProductDTO): Promise<ProductEntity> {
-    const product = await this.getOne(id);
+    const product = await this.getOneById(id);
 
     if (dto.title) {
       const { slug } = await this.generateProductMetadata(dto.title);
@@ -134,7 +147,7 @@ export class ProductService {
   }
 
   async delete(id: number): Promise<boolean> {
-    const product = await this.getOne(id);
+    const product = await this.getOneById(id);
 
     for (const image of product.images) {
       await this.productImageService.removeImage(image.url);

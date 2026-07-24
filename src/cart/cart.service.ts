@@ -51,7 +51,7 @@ export class CartService {
       throw new NotFoundException(`Cart with user ID ${userId} not found`);
     }
 
-    const product = await this.productService.getOne(dto.productId);
+    const product = await this.productService.getOneById(dto.productId);
 
     const itemCartDTO = {
       ...dto,

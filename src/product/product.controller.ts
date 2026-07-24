@@ -81,6 +81,31 @@ export class ProductController {
 
   @ApiOperation({
     summary: 'Получение продукта',
+    description: 'Метод получения продукта по slug',
+  })
+  @ApiParam({ name: 'slug', type: 'string', description: 'SLUG продукта' })
+  @ApiOkResponse({ description: 'Продукт найден', type: ResponseProductOneDTO })
+  @ApiBadRequestResponse({
+    description: 'Ошибка неправильного запроса',
+    type: ErrorResponseDTO,
+  })
+  @ApiNotFoundResponse({
+    description: 'Продукт не найден',
+    type: ErrorResponseDTO,
+  })
+  @Get('/by-slug/:slug')
+  async getOneBySlug(
+    @Param('slug') slug: string,
+  ): Promise<ResponseProductOneDTO> {
+    const product = await this.productService.getOneBySlug(slug);
+
+    return plainToInstance(ResponseProductOneDTO, product, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  @ApiOperation({
+    summary: 'Получение продукта',
     description: 'Метод получения продукта по id',
   })
   @ApiParam({ name: 'id', type: 'integer', description: 'ID продукта' })
@@ -93,11 +118,11 @@ export class ProductController {
     description: 'Продукт не найден',
     type: ErrorResponseDTO,
   })
-  @Get(':id')
-  async getOne(
+  @Get('/by-id/:id')
+  async getOneByid(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ResponseProductOneDTO> {
-    const product = await this.productService.getOne(id);
+    const product = await this.productService.getOneById(id);
 
     return plainToInstance(ResponseProductOneDTO, product, {
       excludeExtraneousValues: true,
