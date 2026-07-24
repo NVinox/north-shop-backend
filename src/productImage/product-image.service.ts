@@ -33,7 +33,7 @@ export class ProductImageService {
   async getAllImagesByProduct(
     productId: number,
   ): Promise<ProductImageEntity[]> {
-    const product = await this.productService.getOne(productId);
+    const product = await this.productService.getOneById(productId);
 
     if (!product) {
       throw new NotFoundException(`product with id ${productId} not found`);

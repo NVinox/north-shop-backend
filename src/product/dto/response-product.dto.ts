@@ -44,6 +44,14 @@ export class ResponseProductDTO {
   sku!: string;
 
   @ApiProperty({
+    description: 'Slug товара',
+    type: 'string',
+    example: 'Moloko',
+  })
+  @Expose()
+  slug!: string;
+
+  @ApiProperty({
     description: 'Скидка',
     type: 'number',
     example: 50,
