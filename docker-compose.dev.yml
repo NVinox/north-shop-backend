@@ -33,3 +33,8 @@ services:
 
 volumes:
   postgres_data:
+
+networks:
+  default:
+    name: north-shop-network
+    external: true
